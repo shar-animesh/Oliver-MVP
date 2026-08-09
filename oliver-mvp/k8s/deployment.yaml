@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oliver-mvp
+  labels:
+    app: oliver-mvp
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oliver-mvp
+  template:
+    metadata:
+      labels:
+        app: oliver-mvp
+    spec:
+      containers:
+        - name: oliver-mvp
+          image: oliver-mvp:latest          # Replace with ACR path
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          env:
+            - name: OLIVER_ENV
+              value: "production"
+            # Future: add Azure OpenAI, Cosmos DB connection vars here
+            # - name: AZURE_OPENAI_ENDPOINT
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: oliver-secrets
+            #       key: azure-openai-endpoint
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

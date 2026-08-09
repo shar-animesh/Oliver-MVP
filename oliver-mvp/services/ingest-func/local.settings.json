@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "",
+    "OLIVER_REQUIRE_AUTH": "false",
+    "OLIVER_INGEST_TOKEN": "REPLACE-IN-AZURE-APP-SETTINGS-OR-KEY-VAULT",
+    "OLIVER_STORE": "cosmos",
+    "OLIVER_COSMOS_ENDPOINT": "https://<your-cosmos-account>.documents.azure.com:443/",
+    "OLIVER_COSMOS_DATABASE": "oliver",
+    "OLIVER_COSMOS_CONTAINER": "submissions"
+  }
+}

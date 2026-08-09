@@ -1,0 +1,11 @@
+{
+  "version": "weight-set/3.1.0",
+  "model_version": "scoring-model/3.1.0",
+  "weights": {
+    "DI1": {"ideaCompleteness": 10, "ideaQuality": 40, "strategicValue": 20, "technicalFeasibility": 20, "executionReadiness": 10},
+    "DI2": {"ideaCompleteness": 10, "ideaQuality": 30, "strategicValue": 25, "technicalFeasibility": 20, "executionReadiness": 15},
+    "DI3": {"ideaCompleteness": 10, "ideaQuality": 20, "strategicValue": 25, "technicalFeasibility": 25, "executionReadiness": 20},
+    "DI4": {"ideaCompleteness": 5, "ideaQuality": 15, "strategicValue": 30, "technicalFeasibility": 25, "executionReadiness": 25},
+    "DI5": {"ideaCompleteness": 5, "ideaQuality": 10, "strategicValue": 35, "technicalFeasibility": 20, "executionReadiness": 30}
+  }
+}

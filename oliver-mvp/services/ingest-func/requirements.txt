@@ -1,0 +1,7 @@
+azure-functions
+# Shared core (assessment pipeline, scoring engine, report renderer, schemas, ingest).
+# Local: installed editable from the monorepo.
+#   pip install -e ../../packages/oliver-core
+# Deployment: build oliver-core as a wheel and install from a private feed, or vendor
+# it into the function app; editable paths do not survive `func publish`.
+-e ../../packages/oliver-core

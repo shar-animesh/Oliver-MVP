@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oliver-mvp
+  labels:
+    app: oliver-mvp
+spec:
+  type: ClusterIP      # Switch to LoadBalancer or add Ingress for external access
+  selector:
+    app: oliver-mvp
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http

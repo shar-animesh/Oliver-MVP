@@ -1,0 +1,8 @@
+# Oliver read/assessment API (FastAPI host).
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Shared core (assessment pipeline, scoring engine, report renderer, schemas).
+# Installed editable from the monorepo:  pip install -e ../packages/oliver-core
+# (pydantic is pulled in transitively by oliver-core.)
+-e ../packages/oliver-core

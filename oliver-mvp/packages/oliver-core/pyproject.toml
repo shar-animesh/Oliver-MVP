@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oliver-core"
+version = "0.1.0"
+description = "Framework-free core of the Oliver Lifecycle Mesh: assessment pipeline, canonical scoring engine, and report renderer."
+requires-python = ">=3.11"
+# Deliberately minimal: the core depends only on pydantic. No web framework,
+# no Azure SDKs, no storage client — those live in the services that import it.
+dependencies = [
+    "pydantic>=2.10,<3",
+]
+
+[project.optional-dependencies]
+# Test-only tooling for the package's own contract suite.
+test = [
+    "pytest>=8",
+]
+# Production durable backend (Cosmos DB). Only needed when OLIVER_STORE=cosmos.
+# The default (memory) and sqlite backends require nothing beyond pydantic.
+cosmos = [
+    "azure-cosmos>=4.7",
+    "azure-identity>=1.17",
+]
+
+[tool.setuptools]
+packages = ["oliver_core"]
+
+[tool.setuptools.package-data]
+oliver_core = ["RUBRIC.md", "data/*.json"]
