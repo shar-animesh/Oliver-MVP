@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oliver on Azure — Step-by-Step Build Plan</title>
+<style>
+  :root{
+    --teal:#7c3aed; --teal-d:#5b21b6; --teal-l:#f2ecfc;
+    --ink:#1f2933; --muted:#5b6b78; --line:#e2e8ec; --bg:#f4f6f7;
+    --amber:#D97706; --amber-bg:#fffbeb; --green:#9333ea; --green-bg:#faf5ff;
+    --blue:#1D4ED8; --blue-bg:#eff6ff; --violet:#6b3fa0; --violet-bg:#f5f0fb;
+    --new:#b91c1c; --new-bg:#fef2f2;
+    --az:#0a6ed1; --az-bg:#eaf3fc; --az-d:#074a8c;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);
+    background:var(--bg);line-height:1.6;margin:0;padding:0 0 60px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+  header.hero{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;
+    padding:40px 22px 34px;}
+  header.hero .wrap{padding:0 0;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;margin:0 0 8px;}
+  header.hero h1{margin:0;font-size:30px;line-height:1.2;}
+  header.hero p.sub{margin:12px 0 0;font-size:17px;opacity:.95;max-width:780px;}
+  .meta{margin-top:18px;font-size:13px;opacity:.8;}
+  section{background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:26px 28px;margin:22px 0;}
+  h2{color:var(--teal-d);font-size:21px;margin:0 0 4px;}
+  h2 .num{display:inline-block;background:var(--teal);color:#fff;border-radius:6px;
+    width:30px;height:30px;line-height:30px;text-align:center;font-size:15px;margin-right:10px;}
+  .lede{color:var(--muted);font-size:15px;margin:6px 0 18px;}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--ink);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0;padding-left:22px;}
+  li{margin:6px 0;}
+  .callout{border-left:4px solid var(--teal);background:var(--teal-l);padding:14px 18px;
+    border-radius:0 8px 8px 0;margin:16px 0;font-size:15px;}
+  .callout.amber{border-color:var(--amber);background:var(--amber-bg);}
+  .callout.violet{border-color:var(--violet);background:var(--violet-bg);}
+  .callout.az{border-color:var(--az);background:var(--az-bg);}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0;}
+  th{background:#f3f6f7;text-align:left;padding:10px 12px;border-bottom:2px solid var(--teal);
+    color:var(--teal-d);font-size:13px;}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;
+    white-space:nowrap;}
+  .tag.exist{background:var(--teal-l);color:var(--teal-d);}
+  .tag.new{background:var(--new-bg);color:var(--new);}
+  .tag.az{background:var(--az-bg);color:var(--az-d);}
+  /* azure service chip */
+  .svc{display:inline-block;background:var(--az-bg);color:var(--az-d);border:1px solid #bcdcf6;
+    border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;white-space:nowrap;margin:2px 3px 2px 0;}
+  /* contrast cards */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
+  .card{border:1px solid var(--line);border-radius:9px;padding:18px;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card.now{background:var(--amber-bg);border-color:#f5d9a8;}
+  .card.now h4{color:var(--amber);}
+  .card.tgt{background:var(--az-bg);border-color:#bcdcf6;}
+  .card.tgt h4{color:var(--az-d);}
+  /* flow chips */
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-size:13px;}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 10px;}
+  .chip.k{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:600;}
+  .chip.a{background:var(--az-bg);color:var(--az-d);border-color:#bcdcf6;font-weight:600;}
+  .arrow{color:var(--muted);font-weight:700;}
+  /* layer stack */
+  .stack{display:grid;grid-template-columns:1fr;gap:10px;margin:18px 0;}
+  .layer{border:1px solid var(--line);border-radius:10px;padding:13px 16px;display:grid;
+    grid-template-columns:200px 1fr;gap:14px;align-items:center;}
+  .layer .lh{font-weight:700;color:var(--teal-d);font-size:14px;}
+  .layer .lh small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;}
+  .layer .lb{display:flex;flex-wrap:wrap;gap:5px;}
+  .layer.edge{background:var(--teal-l);border-color:#d8c7f5;}
+  .layer.az{background:var(--az-bg);border-color:#bcdcf6;}
+  /* sequence */
+  .seq{counter-reset:step;margin:16px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .seq .sr{display:grid;grid-template-columns:34px 150px 1fr;gap:12px;align-items:start;
+    padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .seq .sr:last-child{border-bottom:none;}
+  .seq .sr:nth-child(odd){background:#fbfafe;}
+  .seq .sn{counter-increment:step;background:var(--teal);color:#fff;border-radius:50%;width:24px;height:24px;
+    line-height:24px;text-align:center;font-size:12px;font-weight:700;}
+  .seq .sa{font-weight:600;color:var(--az-d);}
+  /* horizons / phases */
+  .horizon{border-left:4px solid var(--teal);padding:6px 0 6px 18px;margin:18px 0;}
+  .horizon h3{margin:0 0 2px;color:var(--teal-d);}
+  .horizon .when{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .pill{font-size:12px;background:#f3f6f7;border:1px solid var(--line);border-radius:20px;padding:3px 10px;}
+  .exit{font-size:13px;color:var(--green);background:var(--green-bg);border:1px solid #e6d4fb;
+    border-radius:7px;padding:8px 12px;margin-top:10px;}
+  .exit b{color:var(--green);}
+  .risk td:first-child{font-weight:600;white-space:nowrap;}
+  footer.src{font-size:12px;color:var(--muted);margin-top:8px;}
+  .kicker{font-size:13px;color:var(--teal-d);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  /* toc */
+  .toc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 22px;margin:22px 0;}
+  .toc .th{font-size:13px;color:var(--teal-d);margin:0 0 12px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;}
+  .toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 22px;}
+  .toc li{margin:0;}
+  .toc a{display:flex;gap:11px;align-items:center;text-decoration:none;color:var(--ink);font-size:14px;
+    padding:6px 8px;border-radius:7px;transition:background .15s;}
+  .toc a:hover{background:var(--teal-l);color:var(--teal-d);}
+  .toc a .n{flex:none;width:26px;height:24px;line-height:24px;text-align:center;background:var(--teal-l);
+    color:var(--teal-d);border-radius:6px;font-size:12px;font-weight:700;}
+  /* expandable */
+  details.ag{border:1px solid var(--line);border-radius:9px;margin:8px 0;overflow:hidden;}
+  details.ag summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px;
+    background:#fbfafe;font-size:14px;}
+  details.ag summary::-webkit-details-marker{display:none;}
+  details.ag summary b{color:var(--teal-d);}
+  details.ag summary .tw{margin-left:auto;color:var(--teal);font-size:20px;line-height:1;font-weight:300;
+    transition:transform .2s;flex:none;}
+  details.ag[open] summary .tw{transform:rotate(45deg);}
+  details.ag[open] summary{border-bottom:1px solid var(--line);}
+  details.ag summary small{color:var(--muted);font-size:12px;}
+  .agbody{padding:14px 17px;font-size:13.5px;}
+  .agbody ul{margin:6px 0;}
+  pre.code{margin:10px 0 0;padding:14px 16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+    line-height:1.55;color:#3a3550;background:#faf8ff;border:1px solid #e6ddf7;border-radius:8px;
+    white-space:pre-wrap;word-break:break-word;}
+  pre.code .h{color:var(--teal-d);font-weight:700;}
+  pre.code .c{color:var(--muted);}
+  @media(max-width:760px){.split,.two,.toc ol{grid-template-columns:1fr;}
+    .layer{grid-template-columns:1fr;} .seq .sr{grid-template-columns:28px 1fr;} .seq .sa{grid-column:2;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Siemens Energy · TI · Working Document v0.1 · Companion to 01-Oliver-Planning</p>
+    <h1>Oliver on Azure — A Step-by-Step Build Plan</h1>
+    <p class="sub">How to move Oliver from a Power Automate flow to a full agentic system on Azure —
+      keeping <strong>email</strong> as the front door for everyday submitters, while super-users and admins
+      get a secure Azure site to run, test, and govern the portfolio.</p>
+    <div class="meta">Owner: Anand Sengupta (SE TI TTF) · Drafted 2026-06-05 · Status: thinking-it-through</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <p class="th">Contents</p>
+    <ol>
+      <li><a href="#s0"><span class="n">0</span>The shift in one paragraph</a></li>
+      <li><a href="#s1"><span class="n">1</span>Design goals &amp; constraints</a></li>
+      <li><a href="#s2"><span class="n">2</span>Power Automate today → Azure target</a></li>
+      <li><a href="#s3"><span class="n">3</span>Target architecture — the layers</a></li>
+      <li><a href="#s4"><span class="n">4</span>The two front doors</a></li>
+      <li><a href="#s5"><span class="n">5</span>Agent → Azure service map</a></li>
+      <li><a href="#s6"><span class="n">6</span>Orchestration &amp; the event bus</a></li>
+      <li><a href="#s7"><span class="n">7</span>Identity, security &amp; governance</a></li>
+      <li><a href="#s8"><span class="n">8</span>The build plan — six phases</a></li>
+      <li><a href="#s9"><span class="n">9</span>Migration off Power Automate</a></li>
+      <li><a href="#s10"><span class="n">10</span>Observability, cost &amp; scale</a></li>
+      <li><a href="#s11"><span class="n">11</span>Decisions to lock early</a></li>
+      <li><a href="#s12"><span class="n">12</span>First sprint — start here</a></li>
+    </ol>
+  </nav>
+
+  <!-- 0 -->
+  <section id="s0">
+    <h2><span class="num">0</span>The shift in one paragraph</h2>
+    <p>Power Automate got Oliver live — but it is a <strong>linear, low-code flow</strong>: one email in, a sequence
+      of steps, one email out. The agentic mesh from the planning doc needs three things a flow can't give cleanly:
+      <strong>parallel agents</strong>, <strong>shared state</strong>, and <strong>events</strong> (gates, stalls, drift)
+      that fire between and after submissions. Azure provides all three as managed services. The plan is to keep the
+      experience identical for submitters — <strong>they still just email Oliver</strong> — and move the brain onto Azure:
+      Durable Functions orchestrating the agents, Azure OpenAI as the model layer, Cosmos DB as the living registry,
+      Service Bus as the event bus, and a small <strong>authenticated Azure site</strong> where super-users and admins
+      run tests, inspect agent reasoning, and approve the irreversible calls.</p>
+    <div class="callout az">
+      <strong>The one-line shift:</strong> the channel stays human-friendly (email), the engine becomes
+      cloud-native and event-driven. Submitters notice nothing; the system gains a lifecycle.
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2><span class="num">1</span>Design goals &amp; constraints</h2>
+    <table>
+      <tr><th style="width:30%;">Goal</th><th>What it means concretely</th></tr>
+      <tr><td><strong>Email-first for submitters</strong></td>
+        <td>The trigger and the reply stay email. Zero new UI for the ~everyday user. A shared mailbox
+          (e.g. <em>oliver@siemens-energy.com</em>) is the front door; Herald sends the assessment back.</td></tr>
+      <tr><td><strong>A site only for super-users &amp; admins</strong></td>
+        <td>A secured Azure web app for the few who review, manually run/test assessments, tune weights, and
+          confirm No-Go / scale / retire. Gated by Entra ID roles — submitters never see it.</td></tr>
+      <tr><td><strong>Truly agentic, not a flow</strong></td>
+        <td>Agents run in parallel, share one registry, and react to events — not a fixed step sequence.</td></tr>
+      <tr><td><strong>Governed by construction</strong></td>
+        <td>Managed identity everywhere, secrets in Key Vault, every score &amp; decision logged, EU AI Act
+          classification tracked. Oliver gates AI — so Oliver itself must be auditable.</td></tr>
+      <tr><td><strong>Incremental &amp; reversible</strong></td>
+        <td>Power Automate keeps running until Azure provably matches it. Shadow-run, compare, then cut over a
+          cohort at a time. Rollback = re-point the mail trigger.</td></tr>
+      <tr><td><strong>Re-use what works</strong></td>
+        <td>Keep the v3.0 prompts, the 0–100 evidence-mandatory scoring, the coaching ethos, the HTML email
+          template. We change the <em>plumbing</em>, not the assessment logic.</td></tr>
+    </table>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2><span class="num">2</span>Power Automate today → Azure target</h2>
+    <div class="split">
+      <div class="card now">
+        <h4>Where Oliver runs today</h4>
+        <ul>
+          <li><strong>Outlook trigger</strong> in a Power Automate flow</li>
+          <li>Linear steps; agents simulated as sequential prompt calls</li>
+          <li>Tracker in <strong>SharePoint / Excel</strong> — manual snapshot</li>
+          <li>One pass per email; nothing happens after</li>
+          <li>Hard to parallelise, version, test, or observe</li>
+        </ul>
+      </div>
+      <div class="card tgt">
+        <h4>Where Oliver is going on Azure</h4>
+        <ul>
+          <li><strong>Graph mail webhook</strong> → Function ingest (same email UX)</li>
+          <li><strong>Durable Functions</strong> fan-out the assessment agents in parallel</li>
+          <li><strong>Cosmos DB</strong> registry — live single source of truth</li>
+          <li><strong>Service Bus</strong> events drive the lifecycle continuously</li>
+          <li>CI/CD, traces, and a test harness — engineering-grade</li>
+        </ul>
+      </div>
+    </div>
+    <p class="lede">Same front door, a different — and far more capable — engine behind it.</p>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2><span class="num">3</span>Target architecture — the layers</h2>
+    <p class="lede">Read top to bottom: a submission enters at the edge, the orchestrator fans it across the agent
+      runtime, everything reads/writes the registry, and the platform layer holds it all up.</p>
+
+    <div class="stack">
+      <div class="layer edge">
+        <div class="lh">① Channels / Edge<small>how people interact</small></div>
+        <div class="lb">
+          <span class="svc">Microsoft Graph — mail webhook</span>
+          <span class="svc">Graph sendMail (Herald)</span>
+          <span class="svc">Azure Static Web Apps — admin SPA</span>
+          <span class="svc">Azure Front Door</span>
+        </div>
+      </div>
+      <div class="layer az">
+        <div class="lh">② Gateway &amp; Identity<small>guard the doors</small></div>
+        <div class="lb">
+          <span class="svc">Azure API Management</span>
+          <span class="svc">Microsoft Entra ID — app roles</span>
+          <span class="svc">Easy Auth / MSAL</span>
+        </div>
+      </div>
+      <div class="layer az">
+        <div class="lh">③ Orchestration<small>the Conductor</small></div>
+        <div class="lb">
+          <span class="svc">Azure Durable Functions</span>
+          <span class="svc">Azure Service Bus — topics/subs (event bus)</span>
+          <span class="svc">Event Grid</span>
+        </div>
+      </div>
+      <div class="layer az">
+        <div class="lh">④ Agent Runtime<small>the 17-agent mesh</small></div>
+        <div class="lb">
+          <span class="svc">Azure AI Foundry — Agent Service</span>
+          <span class="svc">Azure Container Apps (alt. host)</span>
+          <span class="svc">Azure OpenAI — GPT-4o + embeddings</span>
+          <span class="svc">Semantic Kernel / AutoGen</span>
+        </div>
+      </div>
+      <div class="layer az">
+        <div class="lh">⑤ Memory &amp; Retrieval<small>the Registrar</small></div>
+        <div class="lb">
+          <span class="svc">Azure Cosmos DB — registry + change feed</span>
+          <span class="svc">Azure AI Search — vectors</span>
+          <span class="svc">Blob Storage — submissions &amp; reports</span>
+        </div>
+      </div>
+      <div class="layer az">
+        <div class="lh">⑥ Operations &amp; Integration<small>Sentinel · Realizer · Auditor</small></div>
+        <div class="lb">
+          <span class="svc">Azure ML — model monitoring / drift</span>
+          <span class="svc">APIM → SAP PM / EWM / S4HANA</span>
+          <span class="svc">Microsoft Purview — lineage</span>
+        </div>
+      </div>
+      <div class="layer az">
+        <div class="lh">⑦ Platform<small>cross-cutting</small></div>
+        <div class="lb">
+          <span class="svc">Key Vault + Managed Identity</span>
+          <span class="svc">Azure Monitor · App Insights · Log Analytics</span>
+          <span class="svc">Bicep / Terraform IaC</span>
+          <span class="svc">GitHub Actions / Azure DevOps</span>
+        </div>
+      </div>
+    </div>
+    <p class="legend" style="font-size:12px;color:var(--muted);"><span class="svc">blue</span> = Azure service ·
+      the agent names (Conductor, Registrar, Sentinel…) come straight from the planning doc — this layer just says
+      <em>which Azure service hosts each one</em>.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <h2><span class="num">4</span>The two front doors</h2>
+    <p class="lede">One system, two ways in. The everyday path is email and never changes. The privileged path is a
+      site — and both hit the same Conductor and Registrar underneath.</p>
+
+    <h3>Door A — the submitter (email, unchanged)</h3>
+    <div class="seq">
+      <div class="sr"><span class="sn"></span><span class="sa">Submitter</span><span>Emails an idea/submission to <em>oliver@…</em> (with attachments).</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Graph webhook</span><span>Change notification fires → Azure Function picks up the message + attachments.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Ingest Function</span><span>Parses, stores attachments in Blob, writes a normalized <em>Submission</em> record to Cosmos, raises <code>submission.received</code>.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Conductor</span><span>Durable orchestrator starts: DocGuard pre-gate → fan-out IdeaPulse / ValuePulse / TechScope / PathFinder in parallel.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Verdict + StageMaster</span><span>Consolidate to one 0–100 score; assign DI stage &amp; lifecycle state; IdeaCoach + Pacer attach coaching and cadence.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Registrar</span><span>Persists scores, evidence, state; appends to the audit log.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Herald</span><span>Renders the HTML assessment and sends the reply email via Graph. Submitter is done — no site, no login.</span></div>
+    </div>
+
+    <h3>Door B — the super-user / admin (Azure site)</h3>
+    <div class="seq">
+      <div class="sr"><span class="sn"></span><span class="sa">Admin</span><span>Signs in to the Static Web App with Entra ID (SuperUser or Admin role required).</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Portfolio view</span><span>Reads the live registry: every pilot, its DI stage, state, score, days-to-next-gate, SLO health.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Run / test</span><span>Pastes or uploads a draft submission and triggers an assessment on demand — same agents, sandbox flag — to test prompts/weights before they go live.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Inspect</span><span>Opens any pilot to see per-agent scores, evidence, and the full reasoning trace (App Insights correlation id).</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Approve</span><span>The HITL queue surfaces irreversible calls (No-Go, scale, retire); the orchestrator is paused on a Durable <em>wait-for-external-event</em> until a human confirms.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Tune</span><span>Adjusts scoring weights / thresholds (versioned in the registry) and re-runs trend-mining.</span></div>
+    </div>
+
+    <div class="callout">
+      <strong>Why this split is the right one:</strong> 95% of users get the lowest-friction interface possible
+      (their inbox), while the handful who operate and govern the system get the depth they need (traces, test harness,
+      approvals) — without ever exposing that complexity to submitters.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <h2><span class="num">5</span>Agent → Azure service map</h2>
+    <p class="lede">Each agent from the planning doc gets a concrete Azure home. The mesh is logical; this is the physical.</p>
+    <table>
+      <tr><th>Mesh component</th><th>Hosted on</th><th>Note</th></tr>
+      <tr><td>Email in &amp; out — <span class="tag exist">Herald</span></td>
+        <td><span class="svc">Graph mail webhook</span> <span class="svc">Functions</span> <span class="svc">Graph sendMail</span></td>
+        <td>Keeps the email UX identical to today.</td></tr>
+      <tr><td>Router + event bus — <span class="tag new">Conductor</span></td>
+        <td><span class="svc">Durable Functions</span> <span class="svc">Service Bus</span></td>
+        <td>Fan-out/fan-in + human-interaction patterns; topics per event type.</td></tr>
+      <tr><td>Assessment / enablement agents <small>(DocGuard, IdeaPulse, ValuePulse, TechScope, PathFinder, Verdict, StageMaster, IdeaCoach, Pacer, Connector, Scout)</small></td>
+        <td><span class="svc">AI Foundry Agent Service</span> <span class="svc">Azure OpenAI</span></td>
+        <td>One agent = prompt + tools + model call. Container Apps as the fallback host if more control is needed.</td></tr>
+      <tr><td>Living registry — <span class="tag new">Registrar</span></td>
+        <td><span class="svc">Cosmos DB</span> <span class="svc">Blob</span></td>
+        <td>NoSQL doc per pilot + append-only change log; change feed emits state events.</td></tr>
+      <tr><td>Retrieval — Scout dedup, Connector, trend-mining</td>
+        <td><span class="svc">Azure AI Search</span></td>
+        <td>Vector + keyword over past pilots, templates, experts.</td></tr>
+      <tr><td>Drift &amp; SLO watch — <span class="tag new">Sentinel</span></td>
+        <td><span class="svc">Azure ML monitoring</span> <span class="svc">App Insights</span> <span class="svc">timer Functions</span></td>
+        <td>Watches deployed models vs accuracy ≥80% / bias &lt;10% / latency; raises breach events.</td></tr>
+      <tr><td>Value realization — <span class="tag new">Realizer</span></td>
+        <td><span class="svc">APIM → SAP PM/EWM/S4HANA</span></td>
+        <td>Pulls actuals to reconcile projected vs realized ROI/savings. Longest integration pole.</td></tr>
+      <tr><td>Compliance &amp; audit — <span class="tag new">Auditor</span></td>
+        <td><span class="svc">Log Analytics</span> <span class="svc">Purview</span> <span class="svc">Cosmos audit container</span></td>
+        <td>Continuous EU AI Act classification + immutable trail. Governs the governor.</td></tr>
+      <tr><td>Admin site + HITL — <span class="tag exist">Human Console</span></td>
+        <td><span class="svc">Static Web Apps</span> <span class="svc">Functions/Container Apps API</span> <span class="svc">Entra ID</span></td>
+        <td>Door B. Approval queue wired to Durable wait-for-external-event.</td></tr>
+    </table>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <h2><span class="num">6</span>Orchestration &amp; the event bus — turning a flow into a mesh</h2>
+    <p class="lede">This is the heart of the agentic upgrade. Power Automate runs a fixed sequence; the Conductor runs on
+      <strong>events</strong>, so the system keeps working between and after submissions.</p>
+
+    <h3>The events that drive the lifecycle</h3>
+    <div class="flow">
+      <span class="chip a">submission.received</span>
+      <span class="chip a">gate.decided</span>
+      <span class="chip a">pilot.stalled</span>
+      <span class="chip a">slo.breached</span>
+      <span class="chip a">drift.detected</span>
+      <span class="chip a">value.checked</span>
+      <span class="chip a">pilot.retired</span>
+    </div>
+    <p>Each is a Service Bus topic. Agents subscribe to the ones they care about; the Conductor routes and the Registrar's
+      Cosmos change feed turns state writes into more events. Two orchestration patterns carry most of the load:</p>
+    <ul>
+      <li><strong>Fan-out / fan-in</strong> — DocGuard passes, then the four assessment agents run in parallel; Verdict
+        joins their results. (In Power Automate these were serial — this alone is a big latency win.)</li>
+      <li><strong>Human interaction</strong> — for No-Go / scale / retire, the orchestrator pauses on a Durable
+        <em>wait-for-external-event</em> and resumes only when an admin clicks approve in the console.</li>
+    </ul>
+
+    <details class="ag"><summary><span class="tag az">PSEUDOCODE</span><b>Conductor — the submission orchestrator</b><small>Durable Functions sketch</small><span class="tw">+</span></summary>
+      <div class="agbody">
+<pre class="code"><span class="c">// Durable orchestrator — fan-out/fan-in + HITL, illustrative</span>
+<span class="h">function*</span> assessSubmission(ctx) {
+  const sub = ctx.getInput();
+
+  <span class="c">// pre-gate: completeness</span>
+  const doc = yield ctx.callActivity(<span class="h">"DocGuard"</span>, sub);
+  if (doc.completeness &lt; 30) return yield ctx.callActivity(<span class="h">"Herald.coachingReject"</span>, doc);
+
+  <span class="c">// fan-out the four assessors in parallel</span>
+  const [idea, value, tech, path] = yield ctx.Task.all([
+    ctx.callActivity(<span class="h">"IdeaPulse"</span>,  sub),
+    ctx.callActivity(<span class="h">"ValuePulse"</span>, sub),
+    ctx.callActivity(<span class="h">"TechScope"</span>,  sub),
+    ctx.callActivity(<span class="h">"PathFinder"</span>, sub),
+  ]);
+
+  <span class="c">// fan-in: consolidate + stage</span>
+  const verdict = yield ctx.callActivity(<span class="h">"Verdict"</span>, { idea, value, tech, path });
+  const stage   = yield ctx.callActivity(<span class="h">"StageMaster"</span>, verdict);
+  yield ctx.callActivity(<span class="h">"Registrar.upsert"</span>, { sub, verdict, stage });
+
+  <span class="c">// HITL only for irreversible calls</span>
+  if (stage.requiresHumanSignoff) {
+    yield ctx.waitForExternalEvent(<span class="h">"HumanDecision"</span>);  <span class="c">// admin console resumes this</span>
+  }
+
+  const coach = yield ctx.callActivity(<span class="h">"IdeaCoach"</span>, { sub, verdict, stage });
+  yield ctx.callActivity(<span class="h">"Herald.sendAssessment"</span>, { sub, verdict, stage, coach });
+}</pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <h2><span class="num">7</span>Identity, security &amp; governance</h2>
+    <table>
+      <tr><th style="width:26%;">Concern</th><th>How Azure handles it</th></tr>
+      <tr><td><strong>Roles</strong></td>
+        <td>Entra ID app roles: <span class="tag">Submitter</span> (no site access — email only), <span class="tag">SuperUser</span>
+          (run/test, inspect), <span class="tag">Admin</span> (approve, tune weights, govern). The SPA enforces via MSAL; the API re-checks every call.</td></tr>
+      <tr><td><strong>Secrets</strong></td>
+        <td>Nothing in code or config. Key Vault holds keys/connection strings; every service uses a Managed Identity — no passwords to leak.</td></tr>
+      <tr><td><strong>Network</strong></td>
+        <td>Private endpoints for Cosmos, OpenAI, Service Bus; APIM as the only public façade for the API; Front Door for the site.</td></tr>
+      <tr><td><strong>Audit (Auditor)</strong></td>
+        <td>Every score and decision appended to an immutable Cosmos container + Log Analytics. The framework already <em>requires</em> a full audit trail — this makes it native.</td></tr>
+      <tr><td><strong>EU AI Act</strong></td>
+        <td>Classification stored per pilot and re-checked as it evolves; Purview tracks data lineage. Oliver's <em>own</em> decisions are in scope — govern the governor.</td></tr>
+      <tr><td><strong>Data residency</strong></td>
+        <td>Pin Azure OpenAI + storage to EU regions; submissions and transcripts never leave the tenant boundary.</td></tr>
+    </table>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <h2><span class="num">8</span>The build plan — six phases</h2>
+    <p class="lede">Each phase ships something usable and has a hard exit test. Phases 0–1 reach Power-Automate parity on
+      Azure; 2–3 add the site and the event mesh; 4–5 close the lifecycle. Click a phase for its concrete resource list.</p>
+
+    <div class="horizon">
+      <div class="when">Phase 0 · Sprint 0 — Foundations / landing zone</div>
+      <h3>Stand up the ground</h3>
+      <p>Subscription, environments (dev/test/prod), IaC, identity, and a working path from a Function to Azure OpenAI.
+        Nothing user-facing — but everything after depends on it.</p>
+      <div class="pill-row"><span class="pill">Resource groups + naming/tagging</span><span class="pill">Bicep repo + CI/CD</span>
+        <span class="pill">Entra app regs + roles</span><span class="pill">Key Vault + Managed Identity</span>
+        <span class="pill">Azure OpenAI / Foundry hub</span><span class="pill">VNet + private endpoints</span></div>
+      <div class="exit"><b>Exit test:</b> a hello-world Function calls GPT-4o through Key Vault config via managed identity; pipelines are green; IaC re-creates the whole RG from scratch.</div>
+      <details class="ag"><summary><span class="tag az">RESOURCES</span><b>Phase 0 — what gets provisioned</b><span class="tw">+</span></summary>
+        <div class="agbody"><ul>
+          <li><span class="svc">Azure Subscription</span> + 3× <span class="svc">Resource Group</span> (dev/test/prod)</li>
+          <li><span class="svc">Bicep / Terraform</span> repo + <span class="svc">GitHub Actions</span> (or Azure DevOps) pipelines</li>
+          <li><span class="svc">Microsoft Entra ID</span> app registrations: API + SPA; app roles SuperUser, Admin</li>
+          <li><span class="svc">Key Vault</span> · <span class="svc">User-assigned Managed Identity</span></li>
+          <li><span class="svc">Azure OpenAI</span> (or AI Foundry project) — deploy GPT-4o + text-embedding model, EU region</li>
+          <li><span class="svc">VNet</span> + <span class="svc">Private Endpoints</span> + <span class="svc">Log Analytics workspace</span></li>
+        </ul></div>
+      </details>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Phase 1 · ~now → Q3 2026 — Port the gate (email parity)</div>
+      <h3>Match Power Automate, on Azure</h3>
+      <p>Bring the email trigger, the 10 assessment agents, the email reply, and a registry MVP onto Azure. Run it in
+        shadow next to Power Automate and prove the outputs match.</p>
+      <div class="pill-row"><span class="pill">Graph mail webhook + ingest</span><span class="pill">Submission parser → Blob/Cosmos</span>
+        <span class="pill">10 agents as Durable activities</span><span class="pill">Verdict + StageMaster</span>
+        <span class="pill">Herald email-out</span><span class="pill">Registrar MVP</span><span class="pill">Shadow-run vs PA</span></div>
+      <div class="exit"><b>Exit test:</b> an email submission flows end-to-end on Azure and returns an assessment that matches or beats the Power Automate output; the pilot record persists in Cosmos.</div>
+      <details class="ag"><summary><span class="tag az">RESOURCES</span><b>Phase 1 — what gets built</b><span class="tw">+</span></summary>
+        <div class="agbody"><ul>
+          <li>Shared mailbox <em>oliver@…</em> + <span class="svc">Graph</span> change-notification subscription (auto-renew job)</li>
+          <li><span class="svc">Functions</span> ingest + parser; <span class="svc">Blob</span> container for attachments/reports</li>
+          <li><span class="svc">Durable Functions</span> orchestrator + one activity per agent (reuse v3.0 prompts verbatim)</li>
+          <li><span class="svc">Cosmos DB</span> — <code>pilots</code> + append-only <code>audit</code> containers</li>
+          <li>Herald via <span class="svc">Graph sendMail</span> using the existing HTML template</li>
+          <li>Shadow-compare harness: mirror inbound mail, diff Azure vs PA output</li>
+        </ul></div>
+      </details>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Phase 2 · Q3 2026 — The admin / super-user site</div>
+      <h3>Open Door B</h3>
+      <p>The Static Web App + API with Entra roles: portfolio dashboard, on-demand run/test, agent-trace inspection,
+        and the HITL approval queue.</p>
+      <div class="pill-row"><span class="pill">Static Web App (React)</span><span class="pill">API (Functions/Container Apps)</span>
+        <span class="pill">Entra auth + roles</span><span class="pill">Portfolio dashboard</span>
+        <span class="pill">Run/test sandbox</span><span class="pill">Trace viewer</span><span class="pill">HITL queue</span></div>
+      <div class="exit"><b>Exit test:</b> an admin logs in, sees all pilots, runs a sandbox test assessment, opens a reasoning trace, and approves/overrides a decision — submitters still see only email.</div>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Phase 3 · Q4 2026 — Event-driven mesh</div>
+      <h3>Wake the Conductor</h3>
+      <p>Service Bus topics + the Conductor make the system react to events, not just inbound mail. The lifecycle state
+        machine, reminders, stall-escalation, and trend-mining come online.</p>
+      <div class="pill-row"><span class="pill">Service Bus topics</span><span class="pill">Conductor router</span>
+        <span class="pill">Cosmos change feed → events</span><span class="pill">State machine (StageMaster)</span>
+        <span class="pill">Advance reminders</span><span class="pill">Stall escalation</span><span class="pill">Trend-mining (Verdict)</span></div>
+      <div class="exit"><b>Exit test:</b> a pilot that idles past its SLA auto-escalates owner→sponsor via Herald with no human prompting; trend-mining produces a portfolio digest on schedule.</div>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Phase 4 · Q4 2026 → Q1 2027 — Operations &amp; assurance</div>
+      <h3>Watch the live pilots</h3>
+      <p>Sentinel, Realizer, and Auditor for DI3–DI5 pilots in production: drift/SLO monitoring, projected-vs-realized
+        value via SAP, and continuous compliance.</p>
+      <div class="pill-row"><span class="pill">Sentinel — drift &amp; SLO</span><span class="pill">Realizer — SAP actuals</span>
+        <span class="pill">Auditor — EU AI Act + Purview</span><span class="pill">Fail-fast mode</span>
+        <span class="pill">Decommission / upgrade</span></div>
+      <div class="exit"><b>Exit test:</b> a live DI3 pilot is monitored; a simulated drift breach raises an event that surfaces in the console; Realizer reconciles its realized value against the gate projection.</div>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Phase 5 · 2027 — Sensing &amp; self-improvement</div>
+      <h3>Full lifecycle mesh</h3>
+      <p>Scout fills the funnel proactively, Connector builds the enablement network, and the synthesis loop feeds
+        portfolio history back into the scoring weights.</p>
+      <div class="pill-row"><span class="pill">Scout — proactive intake</span><span class="pill">Connector network</span>
+        <span class="pill">Self-improving scoring</span><span class="pill">Synthesis loop</span><span class="pill">Org-wide rollout</span></div>
+      <div class="exit"><b>Exit test:</b> Scout surfaces a candidate that becomes a real submission; the synthesis loop ships a versioned weight update grounded in which early signals predicted DI5 outcomes.</div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <h2><span class="num">9</span>Migration off Power Automate — strangler-fig, not big-bang</h2>
+    <p class="lede">Never flip a live governance system in one go. Wrap it, shadow it, prove it, then peel users across.</p>
+    <div class="seq">
+      <div class="sr"><span class="sn"></span><span class="sa">Keep PA live</span><span>Power Automate stays the system of record while Azure is built. No disruption.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Mirror</span><span>Inbound mail is copied to the Azure ingest as well as PA — both process every submission.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Shadow-run</span><span>Azure produces assessments silently; a diff harness compares score, stage, and coaching against PA. Tune until they match.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Cohort cutover</span><span>Flip Herald (the reply) to Azure for one pilot team; PA goes read-only for them. Watch.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Full cutover</span><span>Expand cohort to all; Azure becomes system of record; migrate the 20 tracked pilots into the registry.</span></div>
+      <div class="sr"><span class="sn"></span><span class="sa">Retire</span><span>Decommission the PA flow once a full cycle runs clean on Azure. Rollback at any point = re-point the mail trigger.</span></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2><span class="num">10</span>Observability, cost &amp; scale</h2>
+    <div class="two">
+      <ul>
+        <li><strong>Observability.</strong> Every agent call is a traced span in App Insights with a per-submission
+          correlation id — the admin trace viewer reads these. The audit trail is a by-product, not extra work.</li>
+        <li><strong>Scale.</strong> Durable Functions and Container Apps scale to zero between submissions and fan out on
+          demand — you pay for assessments, not idle capacity.</li>
+      </ul>
+      <ul>
+        <li><strong>Token cost.</strong> The biggest variable is Azure OpenAI tokens × agents × submission. Route
+          DocGuard and simple checks to a cheaper/smaller model; reserve GPT-4o for the scoring agents. Cache embeddings.</li>
+        <li><strong>Guardrails.</strong> APIM rate-limits and budgets/alerts in Cost Management stop a runaway loop from
+          becoming a runaway bill.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2><span class="num">11</span>Decisions to lock early</h2>
+    <table class="risk">
+      <tr><th>Decision</th><th>The trade-off — and a lean recommendation</th></tr>
+      <tr><td>Agent framework</td>
+        <td><strong>AI Foundry Agent Service</strong> (managed, fastest to value) vs <strong>Container Apps + Semantic Kernel/AutoGen</strong>
+          (more control/portability). <em>Recommend:</em> Foundry first; keep agents framework-light so a later swap is cheap.</td></tr>
+      <tr><td>State store</td>
+        <td><strong>Cosmos DB</strong> (scale, change feed, flexible schema) vs <strong>Dataverse</strong> (Power Platform
+          governance, citizen-dev). <em>Recommend:</em> Cosmos as canonical; optional Dataverse read-view if PMO wants it.</td></tr>
+      <tr><td>Canonical scoring model</td>
+        <td>Still the prerequisite from the planning doc: v3.0's <strong>0–100 / 5-dim</strong> vs the tracker's
+          <strong>0–200 / 4-dim</strong>. <em>Resolve before the Registrar schema is frozen</em> — everything keys off it.</td></tr>
+      <tr><td>SAP access for Realizer</td>
+        <td>Reconciling realized value needs read access to SAP PM/EWM/S4HANA. Longest-lead integration — start the access
+          request in Phase 1 even though Realizer lands in Phase 4.</td></tr>
+      <tr><td>Mailbox identity</td>
+        <td>Shared mailbox vs a service account for <em>oliver@…</em>; SPF/DKIM/DMARC so replies don't land in junk. Decide deliverability ownership early.</td></tr>
+      <tr><td>Build vs buy the site</td>
+        <td>Static Web App SPA (full control) vs a Power Pages / low-code admin surface (faster, less flexible). For traces
+          and a test harness, <em>recommend</em> the SPA.</td></tr>
+    </table>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <h2><span class="num">12</span>First sprint — start here</h2>
+    <ol>
+      <li><strong>Lock the canonical scoring model</strong> (v2 ↔ v3 reconciliation) — blocks the registry schema.</li>
+      <li><strong>Stand up the landing zone</strong> (Phase 0): IaC repo, Entra roles, Key Vault, Azure OpenAI in an EU region, green pipeline.</li>
+      <li><strong>Prove one agent end-to-end on Azure</strong> — port DocGuard to a Durable activity calling Azure OpenAI; email in → JSON out.</li>
+      <li><strong>Set up the shadow-run mirror</strong> so every PA submission is also seen by Azure from day one.</li>
+      <li><strong>Open the SAP access request</strong> for Realizer now — it's the longest pole.</li>
+      <li><strong>Spike the Static Web App shell</strong> with Entra login + an empty portfolio view, to de-risk Door B.</li>
+    </ol>
+    <div class="callout violet">
+      <strong>This is a living document.</strong> It complements <em>01-Oliver-Planning.html</em> (the architecture &amp;
+      vision); this file is the <em>how-to-build-it-on-Azure</em>. Next iterations could add: a Bicep skeleton for Phase 0,
+      the Cosmos registry schema, the full Service Bus event taxonomy, and a one-page cost model per submission.
+    </div>
+  </section>
+
+  <footer class="src">
+    <p><span class="kicker">Grounded in</span><br>
+      01-Oliver-Planning.html (the 17-agent Lifecycle Mesh &amp; 6 planes) · AI Pilot Stage Gate Evaluation Protocol v3.0
+      (10-agent system, 0–100 evidence-mandatory scoring) · AI POC Metrics framework (ROI ≥15%, savings ≥€100k, accuracy SLO ≥80%,
+      bias &lt;10%, gate ≥70%, decision &lt;24h, full audit trail) · current Oliver runtime: Microsoft Power Automate.</p>
+    <p><span class="kicker">Azure building blocks referenced</span><br>
+      Microsoft Graph (mail webhook + sendMail) · Azure Functions / Durable Functions · Azure Service Bus &amp; Event Grid ·
+      Azure AI Foundry Agent Service · Azure OpenAI · Azure Container Apps · Azure Cosmos DB · Azure AI Search · Blob Storage ·
+      Azure Static Web Apps · Microsoft Entra ID · Azure API Management · Key Vault · Managed Identity · Azure ML model monitoring ·
+      Microsoft Purview · Azure Monitor / Application Insights / Log Analytics · Bicep/Terraform · GitHub Actions / Azure DevOps.
+      Architecture is directional; service choices to be confirmed against TI's landing-zone standards.</p>
+  </footer>
+
+</div>
+</body>
+</html>
