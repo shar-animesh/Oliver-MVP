@@ -5,7 +5,7 @@ import secrets
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
-from app.config import get_settings
+from config import get_settings
 
 settings = get_settings()
 
