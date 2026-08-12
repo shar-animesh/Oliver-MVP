@@ -9,6 +9,7 @@ from config import get_settings
 
 settings = get_settings()
 
+
 def require_internal_api_key(api_key: str = Security(APIKeyHeader(name="X-Internal-Api-Key"))) -> None:  # noqa: B008
     """Allow calls carrying the shared Logic App service credential."""
     if not secrets.compare_digest(api_key, settings.INTERNAL_API_KEY.get_secret_value()):
