@@ -2,9 +2,9 @@
 # Description: Central validated configuration for the Oliver API, OpenAI models, and Azure SQL.
 
 from functools import lru_cache
-from typing import List, Optional
+from typing import Optional
 
-from pydantic import Field, SecretStr
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     OPENAI_BASE_URL: Optional[str] = None
     OPENAI_MODEL: str
     OPENAI_REASONING_EFFORT: str = "high"
+
     INTERNAL_API_KEY: SecretStr
     DATABASE_URL: SecretStr
 

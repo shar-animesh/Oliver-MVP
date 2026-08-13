@@ -1,4 +1,5 @@
-"""Render the single Oliver system prompt."""
+# Path: utils/prompts/loader.py
+# Description: Build the single Oliver system prompt.
 
 from jinja2 import Environment, PackageLoader, StrictUndefined
 
@@ -27,7 +28,5 @@ _environment = Environment(
 
 
 def build_system_prompt(email_thread: str) -> str:
-    """Build the system prompt with one plain-text email thread."""
-    if not isinstance(email_thread, str):
-        raise TypeError("Oliver email_thread must be a string")
+    """Build the system prompt with the current email thread."""
     return _environment.get_template("system-prompt.jinja2").render(email_thread=email_thread)

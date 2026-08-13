@@ -1,4 +1,5 @@
-"""Oliver backend health endpoint."""
+# Path: routes/health.py
+# Description: Unversioned Oliver process-health route.
 
 from typing import Dict
 
