@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>{{ subject }}</title>
+    <style type="text/css">
+        .oliver-content,
+        .oliver-content h1,
+        .oliver-content h2,
+        .oliver-content h3,
+        .oliver-content p,
+        .oliver-content ul,
+        .oliver-content ol,
+        .oliver-content li,
+        .oliver-content table,
+        .oliver-content th,
+        .oliver-content td {
+            text-align: left !important;
+        }
+        .oliver-content h1 {
+            margin: 0 0 22px !important;
+            color: #8A00E5 !important;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif !important;
+            font-size: 24px !important;
+            line-height: 1.3 !important;
+            font-weight: 700 !important;
+        }
+        .oliver-content h2 {
+            margin: 28px 0 12px !important;
+            padding: 0 !important;
+            color: #4D217A !important;
+            background: transparent !important;
+            border: 0 !important;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif !important;
+            font-size: 19px !important;
+            line-height: 1.35 !important;
+            font-weight: 700 !important;
+        }
+        .oliver-content h3 {
+            margin: 20px 0 8px !important;
+            padding: 0 !important;
+            color: #1B1534 !important;
+            background: transparent !important;
+            border: 0 !important;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.4 !important;
+            font-weight: 700 !important;
+        }
+        .oliver-content p {
+            margin: 0 0 14px !important;
+            color: #1B1B1B !important;
+            font-size: 15px !important;
+            line-height: 1.65 !important;
+        }
+        .oliver-content ul,
+        .oliver-content ol {
+            margin: 0 0 16px !important;
+            padding-left: 22px !important;
+            color: #1B1B1B !important;
+        }
+        .oliver-content li {
+            margin: 0 0 7px !important;
+            padding: 0 !important;
+            color: #1B1B1B !important;
+            font-size: 15px !important;
+            line-height: 1.6 !important;
+        }
+        .oliver-content a {
+            color: #8A00E5 !important;
+            text-decoration: underline !important;
+        }
+        .oliver-content table {
+            width: 100% !important;
+            margin: 4px 0 18px !important;
+            border-collapse: collapse !important;
+        }
+        .oliver-content th,
+        .oliver-content td {
+            padding: 9px 10px !important;
+            border: 1px solid #E2E2E2 !important;
+            color: #1B1B1B !important;
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+            vertical-align: top !important;
+        }
+        .oliver-content th {
+            background-color: #F7F2FD !important;
+            color: #1B1534 !important;
+            font-weight: 700 !important;
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F2F2F2;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+        {{ preheader }}
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;background-color:#F2F2F2;">
+        <tr>
+            <td align="center" style="padding:28px 12px;">
+                <table role="presentation" align="center" width="660" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:660px;margin:0 auto;border-collapse:separate;background-color:#FFFFFF;border:1px solid #E2E2E2;border-radius:12px;overflow:hidden;text-align:left;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+                    <tr>
+                        <td bgcolor="#8A00E5" style="height:5px;background-color:#8A00E5;font-size:0;line-height:0;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td align="left" bgcolor="#1B1534" style="padding:24px 30px;background-color:#1B1534;background-image:linear-gradient(135deg,#1B1534 0%,#4D217A 100%);text-align:left;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+                                <tr>
+                                    <td align="left" valign="middle">
+                                        <img src="{{ logo_data_uri }}" width="174" alt="Siemens Energy" style="display:block;width:174px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;">
+                                    </td>
+                                    <td align="right" valign="middle" style="padding-left:20px;font-size:11px;line-height:1.4;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#CF9BFF;">
+                                        Oliver<br>
+                                        <span style="font-weight:400;color:#FFFFFF;">AI Initiatives</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="oliver-content" align="left" style="padding:32px 30px 26px;background-color:#FFFFFF;color:#1B1B1B;text-align:left;font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.6;">
+                            {{ content_html }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#1B1534" style="padding:20px 30px;background-color:#1B1534;border-top:4px solid #8A00E5;text-align:center;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+                            <p style="margin:0 0 5px;font-size:12px;line-height:1.5;font-weight:700;color:#FFFFFF;">Oliver · Siemens Energy TI</p>
+                            <p style="margin:0;font-size:11px;line-height:1.5;color:#ADA9C2;">Reply to this email to continue the conversation.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

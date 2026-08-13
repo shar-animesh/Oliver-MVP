@@ -1,0 +1,8 @@
+terraform {
+    backend "azurerm" {
+        resource_group_name  = "rg-oliver-tfstate"
+        storage_account_name = "replacewithuniquestoragename"
+        container_name       = "tfstate"
+        key                  = "oliver-dev.tfstate"
+    }
+}

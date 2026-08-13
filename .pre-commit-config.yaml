@@ -1,0 +1,45 @@
+repos:
+  - repo: local
+    hooks:
+      - id: oliver-ruff-check
+        name: Oliver Ruff lint
+        entry: uv run --project oliver ruff check --config oliver/ruff.toml --fix
+        language: system
+        files: ^oliver/.*\.py$
+        types: [python]
+      - id: oliver-ruff-format
+        name: Oliver Ruff format
+        entry: uv run --project oliver ruff format --config oliver/ruff.toml
+        language: system
+        files: ^oliver/.*\.py$
+        types: [python]
+      - id: admin-backend-ruff-check
+        name: Admin backend Ruff lint
+        entry: uv run --project admin-dashboard/backend ruff check --config admin-dashboard/backend/ruff.toml --fix
+        language: system
+        files: ^admin-dashboard/backend/.*\.py$
+        types: [python]
+      - id: admin-backend-ruff-format
+        name: Admin backend Ruff format
+        entry: uv run --project admin-dashboard/backend ruff format --config admin-dashboard/backend/ruff.toml
+        language: system
+        files: ^admin-dashboard/backend/.*\.py$
+        types: [python]
+      - id: admin-frontend-eslint
+        name: Admin frontend ESLint
+        entry: npm --prefix admin-dashboard/frontend run lint:fix
+        language: system
+        files: ^admin-dashboard/frontend/.*\.(ts|tsx)$
+        pass_filenames: false
+      - id: admin-frontend-prettier
+        name: Admin frontend Prettier
+        entry: npm --prefix admin-dashboard/frontend run format
+        language: system
+        files: ^admin-dashboard/frontend/.*\.(css|html|json|mjs|ts|tsx)$
+        pass_filenames: false
+      - id: admin-frontend-typecheck
+        name: Admin frontend TypeScript
+        entry: npm --prefix admin-dashboard/frontend run typecheck
+        language: system
+        files: ^admin-dashboard/frontend/.*\.(ts|tsx)$
+        pass_filenames: false

@@ -1,0 +1,40 @@
+[project]
+name = "oliver"
+version = "0.1.0"
+description = "Single-agent Oliver email assessment service."
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "alembic>=1.16,<2.0",
+    "fastapi>=0.116,<1.0",
+    "jinja2>=3.1.6,<4.0",
+    "markupsafe>=3.0,<4.0",
+    "openai>=2.0,<3.0",
+    "pydantic>=2.12,<3.0",
+    "pydantic-settings>=2.10,<3.0",
+    "pyodbc>=5.2,<6.0",
+    "sqlalchemy>=2.0.43,<3.0",
+    "uvicorn[standard]>=0.35,<1.0",
+]
+
+[tool.poetry]
+packages = [
+    { include = "routes" },
+    { include = "utils" },
+]
+include = [
+    { path = "utils/prompts/system-prompt.jinja2", format = ["sdist", "wheel"] },
+    { path = "utils/templates/*.jinja2.html", format = ["sdist", "wheel"] },
+    { path = "utils/templates/assets/*.b64", format = ["sdist", "wheel"] },
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28,<1.0",
+    "pre-commit>=4.3,<5.0",
+    "ruff>=0.12,<1.0",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

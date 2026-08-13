@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oliver — Implementation, Testing, Validation &amp; Deployment Plan</title>
+<style>
+  :root{
+    --teal:#7c3aed; --teal-d:#5b21b6; --teal-l:#f2ecfc;
+    --ink:#1f2933; --muted:#5b6b78; --line:#e2e8ec; --bg:#f4f6f7;
+    --amber:#D97706; --amber-bg:#fffbeb; --green:#9333ea; --green-bg:#faf5ff;
+    --blue:#1D4ED8; --blue-bg:#eff6ff; --violet:#6b3fa0; --violet-bg:#f5f0fb;
+    --new:#b91c1c; --new-bg:#fef2f2;
+    --az:#0a6ed1; --az-bg:#eaf3fc; --az-d:#074a8c;
+    /* delivery-agent accents */
+    --plan:#6b3fa0; --plan-bg:#f5f0fb;
+    --build:#0a6ed1; --build-bg:#eaf3fc;
+    --test:#D97706; --test-bg:#fffbeb;
+    --doc:#9333ea; --doc-bg:#faf5ff;
+    --ship:#5b21b6; --ship-bg:#f2ecfc;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);
+    background:var(--bg);line-height:1.6;margin:0;padding:0 0 60px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+  header.hero{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;
+    padding:40px 22px 34px;}
+  header.hero .wrap{padding:0 0;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;margin:0 0 8px;}
+  header.hero h1{margin:0;font-size:30px;line-height:1.2;}
+  header.hero p.sub{margin:12px 0 0;font-size:17px;opacity:.95;max-width:790px;}
+  .meta{margin-top:18px;font-size:13px;opacity:.8;}
+  section{background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:26px 28px;margin:22px 0;}
+  h2{color:var(--teal-d);font-size:21px;margin:0 0 4px;}
+  h2 .num{display:inline-block;background:var(--teal);color:#fff;border-radius:6px;
+    width:30px;height:30px;line-height:30px;text-align:center;font-size:15px;margin-right:10px;}
+  .lede{color:var(--muted);font-size:15px;margin:6px 0 18px;}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--ink);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0;padding-left:22px;}
+  li{margin:6px 0;}
+  .callout{border-left:4px solid var(--teal);background:var(--teal-l);padding:14px 18px;
+    border-radius:0 8px 8px 0;margin:16px 0;font-size:15px;}
+  .callout.amber{border-color:var(--amber);background:var(--amber-bg);}
+  .callout.violet{border-color:var(--violet);background:var(--violet-bg);}
+  .callout.az{border-color:var(--az);background:var(--az-bg);}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0;}
+  th{background:#f3f6f7;text-align:left;padding:10px 12px;border-bottom:2px solid var(--teal);
+    color:var(--teal-d);font-size:13px;}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;
+    white-space:nowrap;}
+  .tag.new{background:var(--new-bg);color:var(--new);}
+  .tag.az{background:var(--az-bg);color:var(--az-d);}
+  .svc{display:inline-block;background:var(--az-bg);color:var(--az-d);border:1px solid #bcdcf6;
+    border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;white-space:nowrap;margin:2px 3px 2px 0;}
+  /* delivery-squad cards */
+  .squad{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0;}
+  .sqcard{border:1px solid var(--line);border-radius:11px;padding:16px 18px;background:#fff;}
+  .sqcard .hd{display:flex;align-items:center;gap:10px;margin:0 0 8px;}
+  .sqcard .av{width:34px;height:34px;border-radius:8px;flex:none;display:flex;align-items:center;
+    justify-content:center;font-size:17px;font-weight:800;color:#fff;}
+  .sqcard h4{margin:0;font-size:16px;}
+  .sqcard .ro{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .sqcard p{margin:8px 0 0;font-size:13.5px;}
+  .sqcard .gd{font-size:12px;color:var(--muted);border-top:1px dashed var(--line);
+    margin-top:10px;padding-top:8px;}
+  .sqcard .gd b{color:var(--ink);}
+  .sqcard.p{background:var(--plan-bg);border-color:#ddd0ef;} .sqcard.p .av{background:var(--plan);} .sqcard.p h4{color:var(--plan);}
+  .sqcard.b{background:var(--build-bg);border-color:#bcdcf6;} .sqcard.b .av{background:var(--build);} .sqcard.b h4{color:var(--build);}
+  .sqcard.t{background:var(--test-bg);border-color:#f5d9a8;} .sqcard.t .av{background:var(--test);} .sqcard.t h4{color:var(--test);}
+  .sqcard.d{background:var(--doc-bg);border-color:#e6d4fb;} .sqcard.d .av{background:var(--doc);} .sqcard.d h4{color:var(--doc);}
+  /* delivery loop */
+  .loop{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin:18px 0 6px;}
+  .lp{border-radius:8px;padding:9px 13px;font-size:13px;font-weight:700;color:#fff;border:1px solid;}
+  .lp.p{background:var(--plan);border-color:var(--plan);}
+  .lp.b{background:var(--build);border-color:var(--build);}
+  .lp.t{background:var(--test);border-color:var(--test);}
+  .lp.v{background:var(--green);border-color:var(--green);}
+  .lp.d{background:var(--doc);border-color:var(--doc);}
+  .lp.s{background:var(--ship);border-color:var(--ship);}
+  .loop .ar{color:var(--muted);font-weight:800;font-size:15px;}
+  .loopnote{font-size:12px;color:var(--muted);text-align:center;margin:4px 0 0;}
+  /* step cards */
+  .sphase{display:inline-block;background:var(--teal-l);color:var(--teal-d);border:1px solid #d8c7f5;
+    border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;margin:24px 0 6px;
+    text-transform:uppercase;letter-spacing:.05em;}
+  .step{border:1px solid var(--line);border-radius:11px;margin:12px 0;overflow:hidden;}
+  .step .stitle{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fbfafe;
+    border-bottom:1px solid var(--line);}
+  .step .sn{flex:none;width:30px;height:30px;line-height:30px;text-align:center;background:var(--teal);
+    color:#fff;border-radius:8px;font-size:14px;font-weight:800;}
+  .step .stitle b{font-size:15px;color:var(--ink);}
+  .step .stitle .sm{margin-left:auto;font-size:11.5px;color:var(--muted);}
+  .srow{display:grid;grid-template-columns:108px 1fr;gap:12px;padding:9px 16px;
+    border-bottom:1px solid var(--line);font-size:13.5px;align-items:start;}
+  .srow:last-of-type{border-bottom:none;}
+  .rl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+    border-radius:6px;padding:3px 7px;text-align:center;white-space:nowrap;}
+  .rl.i{background:var(--build-bg);color:var(--build);}
+  .rl.t{background:var(--test-bg);color:var(--test);}
+  .rl.v{background:var(--green-bg);color:var(--green);}
+  .rl.d{background:var(--ship-bg);color:var(--ship);}
+  .who{display:inline-block;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:700;
+    margin-right:6px;white-space:nowrap;}
+  .who.p{background:var(--plan);color:#fff;} .who.b{background:var(--build);color:#fff;}
+  .who.t{background:var(--test);color:#fff;} .who.d{background:var(--doc);color:#fff;}
+  .sfoot{display:grid;grid-template-columns:108px 1fr;gap:12px;padding:9px 16px;background:var(--doc-bg);
+    font-size:13px;align-items:start;}
+  .sfoot .rl{background:#fff;color:var(--doc);border:1px solid #e6d4fb;}
+  code{background:#f2ecfc;color:var(--teal-d);border-radius:4px;padding:1px 5px;font-size:12.5px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;}
+  /* pyramid */
+  .pyr{display:flex;flex-direction:column;align-items:center;gap:5px;margin:18px 0;}
+  .pyr .pl{border-radius:7px;padding:9px 14px;font-size:13px;text-align:center;color:#fff;font-weight:600;}
+  .pyr .pl small{display:block;font-weight:400;font-size:11px;opacity:.9;}
+  /* horizons/exit reused */
+  .exit{font-size:13px;color:var(--green);background:var(--green-bg);border:1px solid #e6d4fb;
+    border-radius:7px;padding:8px 12px;margin:10px 0 0;}
+  .exit b{color:var(--green);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .risk td:first-child{font-weight:600;white-space:nowrap;}
+  footer.src{font-size:12px;color:var(--muted);margin-top:8px;}
+  .kicker{font-size:13px;color:var(--teal-d);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  /* toc */
+  .toc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 22px;margin:22px 0;}
+  .toc .th{font-size:13px;color:var(--teal-d);margin:0 0 12px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;}
+  .toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 22px;}
+  .toc li{margin:0;}
+  .toc a{display:flex;gap:11px;align-items:center;text-decoration:none;color:var(--ink);font-size:14px;
+    padding:6px 8px;border-radius:7px;transition:background .15s;}
+  .toc a:hover{background:var(--teal-l);color:var(--teal-d);}
+  .toc a .n{flex:none;width:26px;height:24px;line-height:24px;text-align:center;background:var(--teal-l);
+    color:var(--teal-d);border-radius:6px;font-size:12px;font-weight:700;}
+  /* expandable */
+  details.ag{border:1px solid var(--line);border-radius:9px;margin:8px 0;overflow:hidden;}
+  details.ag summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px;
+    background:#fbfafe;font-size:14px;}
+  details.ag summary::-webkit-details-marker{display:none;}
+  details.ag summary b{color:var(--teal-d);}
+  details.ag summary .tw{margin-left:auto;color:var(--teal);font-size:20px;line-height:1;font-weight:300;
+    transition:transform .2s;flex:none;}
+  details.ag[open] summary .tw{transform:rotate(45deg);}
+  details.ag[open] summary{border-bottom:1px solid var(--line);}
+  details.ag summary small{color:var(--muted);font-size:12px;}
+  pre.prompt{margin:0;padding:15px 17px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+    line-height:1.6;color:#3a3550;background:#faf8ff;white-space:pre-wrap;word-break:break-word;}
+  pre.prompt .h{color:var(--teal-d);font-weight:700;}
+  @media(max-width:760px){.squad,.two,.toc ol{grid-template-columns:1fr;}
+    .srow,.sfoot{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Siemens Energy · TI · Working Document v0.1 · Step 3 · Companion to 01-Planning &amp; 02-Azure-Build-Plan</p>
+    <h1>Oliver — The Implementation, Testing, Validation &amp; Deployment Plan</h1>
+    <p class="sub">The executable, numbered playbook that turns the six-phase Azure build plan into 22 concrete
+      steps — each one <strong>built</strong>, <strong>tested</strong>, <strong>validated against a gate</strong>,
+      and <strong>deployed</strong>. Run by a four-agent delivery squad: <strong>Planner, Builder, Tester,
+      Documentor</strong>. Oliver builds Oliver.</p>
+    <div class="meta">Owner: Anand Sengupta (SE TI TTF) · Drafted 2026-06-05 · Status: thinking-it-through</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <p class="th">Contents</p>
+    <ol>
+      <li><a href="#s0"><span class="n">0</span>From build-plan to executable plan</a></li>
+      <li><a href="#s1"><span class="n">1</span>The delivery squad — four new agents</a></li>
+      <li><a href="#s2"><span class="n">2</span>The delivery loop</a></li>
+      <li><a href="#s3"><span class="n">3</span>How to read a step</a></li>
+      <li><a href="#s4"><span class="n">4</span>Phase 0 — Foundations (steps 1–3)</a></li>
+      <li><a href="#s5"><span class="n">5</span>Phase 1 — Email parity (steps 4–9)</a></li>
+      <li><a href="#s6"><span class="n">6</span>Phase 2 — Admin site (steps 10–13)</a></li>
+      <li><a href="#s7"><span class="n">7</span>Phase 3 — Event mesh (steps 14–16)</a></li>
+      <li><a href="#s8"><span class="n">8</span>Phase 4 — Operations (steps 17–18)</a></li>
+      <li><a href="#s9"><span class="n">9</span>Phase 5 — Sensing &amp; self-improve (19–20)</a></li>
+      <li><a href="#s10"><span class="n">10</span>Cutover &amp; go-live (steps 21–22)</a></li>
+      <li><a href="#s11"><span class="n">11</span>Testing &amp; validation strategy</a></li>
+      <li><a href="#s12"><span class="n">12</span>Environments, CI/CD &amp; Definition of Done</a></li>
+      <li><a href="#s13"><span class="n">13</span>Appendix — delivery-agent prompts</a></li>
+    </ol>
+  </nav>
+
+  <!-- 0 -->
+  <section id="s0">
+    <h2><span class="num">0</span>From build-plan to executable plan</h2>
+    <p><em>02-Oliver-Azure-Build-Plan</em> answered <strong>what to build and in what order</strong> — six phases,
+      each with a hard exit test. This document answers <strong>how each piece actually gets delivered</strong>:
+      the numbered steps, who does each part, what proves it works, and when it ships. The phases and their exit
+      tests are unchanged; here they are decomposed into <strong>22 numbered steps</strong>, and every step runs
+      the same disciplined cycle — plan, build, test, validate, document, deploy.</p>
+    <p>The neat part: we apply Oliver's own agentic philosophy to <em>building</em> Oliver. Just as the run-time mesh
+      has agents for assessment and operations, the build gets a small <strong>delivery squad</strong> of four agents
+      that own the plan-build-test-document loop. The same governance ethos — evidence-mandatory, human-in-the-loop on
+      irreversible calls, auditable by construction — carries straight into how the system is constructed.</p>
+    <div class="callout az">
+      <strong>The one-line shift:</strong> the six phases stay the same; this plan makes them <em>executable</em> —
+      22 steps, each with an Implement / Test / Validate / Deploy contract and a named owner.
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2><span class="num">1</span>The delivery squad — four new agents</h2>
+    <p class="lede">These are <strong>build-time</strong> agents — distinct from the 17 run-time mesh agents in doc 01.
+      They construct, prove, and ship the system. Each maps to one facet of the request: build, test, validate, deploy —
+      with the Planner owning the gates and the Documentor recording every step.</p>
+
+    <div class="squad">
+      <div class="sqcard p">
+        <div class="hd"><div class="av">P</div>
+          <div><h4>Planner · NEW</h4><div class="ro">Validation &amp; sequencing</div></div></div>
+        <p>Breaks the phases into dependency-aware steps, defines each step's <strong>exit gate</strong>, and owns
+          <strong>validation</strong>: a step is only "done" when its gate passes. Re-plans the moment a test fails —
+          it never lets failed work move forward.</p>
+        <div class="gd"><b>Guard:</b> every step has an explicit, testable exit gate; no work starts before its
+          dependencies are met; failures loop back, they don't get waved through.</div>
+      </div>
+      <div class="sqcard b">
+        <div class="hd"><div class="av">B</div>
+          <div><h4>Builder · NEW</h4><div class="ro">Implementation</div></div></div>
+        <p>Does the <strong>implementation</strong>: provisions Azure resources via IaC, writes the Function and agent
+          code, and wires the integrations (Graph, Service Bus, Cosmos, SAP). Turns a planned step into running
+          infrastructure and code.</p>
+        <div class="gd"><b>Guard:</b> infrastructure-as-code only — no manual portal clicks; managed identity
+          everywhere; no secrets in code or config.</div>
+      </div>
+      <div class="sqcard t">
+        <div class="hd"><div class="av">T</div>
+          <div><h4>Tester · NEW</h4><div class="ro">Testing &amp; assurance</div></div></div>
+        <p>Owns <strong>testing</strong> at every level — unit, integration, shadow-diff vs Power Automate, load,
+          security, compliance. Produces the evidence the Planner's gate consumes, and blocks promotion until the
+          tests are green.</p>
+        <div class="gd"><b>Guard:</b> no promotion without passing tests <em>and</em> the evidence attached;
+          shadow-parity must hold before any cutover.</div>
+      </div>
+      <div class="sqcard d">
+        <div class="hd"><div class="av">D</div>
+          <div><h4>Documentor · NEW</h4><div class="ro">Record of truth</div></div></div>
+        <p>Captures the runbooks, architecture decisions (ADRs), the Cosmos registry schema, API docs, and the event
+          taxonomy — and keeps docs <strong>01 / 02 / 03</strong> in sync as the build teaches us things.</p>
+        <div class="gd"><b>Guard:</b> every shipped step leaves an artifact-of-record; docs are updated <em>before</em>
+          a step is called Done — not after.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Why a squad, not a checklist:</strong> the four roles are a separation of concerns — the one who builds
+      is not the one who decides it passed (Builder ≠ Planner gate), and nothing ships undocumented. That is the same
+      "govern the governor" discipline doc 01 applies to the run-time mesh, turned inward onto the build itself.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2><span class="num">2</span>The delivery loop — every step runs this cycle</h2>
+    <p class="lede">Each of the 22 steps moves clockwise through the same loop. A failed gate doesn't stop the
+      project — it loops back to the Planner, who re-sequences and the cycle repeats.</p>
+
+    <div class="loop">
+      <span class="lp p">Plan</span><span class="ar">→</span>
+      <span class="lp b">Build</span><span class="ar">→</span>
+      <span class="lp t">Test</span><span class="ar">→</span>
+      <span class="lp v">Validate (gate)</span><span class="ar">→</span>
+      <span class="lp d">Document</span><span class="ar">→</span>
+      <span class="lp s">Deploy</span>
+    </div>
+    <p class="loopnote">↺ Gate fails → back to Plan (re-sequence &amp; retry). Gate passes → Document → Deploy → next step.</p>
+
+    <ul>
+      <li><strong>Plan</strong> — Planner confirms dependencies are met and restates the step's exit gate.</li>
+      <li><strong>Build</strong> — Builder provisions + codes the step (IaC, Functions, wiring).</li>
+      <li><strong>Test</strong> — Tester runs the level(s) of tests that apply to this step.</li>
+      <li><strong>Validate</strong> — Planner checks the evidence against the gate; pass or loop back.</li>
+      <li><strong>Document</strong> — Documentor records the artifact-of-record and updates the living docs.</li>
+      <li><strong>Deploy</strong> — promote through dev → test → prod behind the CI/CD gates in §12.</li>
+    </ul>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2><span class="num">3</span>How to read a step</h2>
+    <p class="lede">Every numbered step below is one card with the same four rows plus a Documentor footer. The colored
+      label says which facet; the chip says which agent owns it.</p>
+    <div class="step">
+      <div class="stitle"><span class="sn">N</span><b>The thing being delivered</b><span class="sm">Phase · depends on …</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>What gets provisioned and coded.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Which tests run, at which level.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span>The exit gate — the pass/fail condition.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Where it lands (dev/test/prod) and behind what control.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>The artifact-of-record this step leaves behind.</div></div>
+    </div>
+    <p class="loopnote">22 steps follow, grouped by the six phases from doc 02, then cutover.</p>
+  </section>
+
+  <!-- 4 — PHASE 0 -->
+  <section id="s4">
+    <h2><span class="num">4</span>Phase 0 — Foundations (steps 1–3)</h2>
+    <p class="lede">Stand up the landing zone. Nothing user-facing — but everything after depends on it.
+      <strong>Exit:</strong> a hello-world Function calls GPT-4o through Key Vault via managed identity; pipelines green;
+      IaC re-creates the whole resource group from scratch.</p>
+
+    <div class="sphase">Phase 0 · Foundations</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">1</span><b>Landing zone &amp; IaC</b><span class="sm">Phase 0 · no deps</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Subscription, 3× resource group (dev/test/prod), naming/tagging, VNet + private endpoints, Log Analytics — all in <span class="svc">Bicep / Terraform</span>; <span class="svc">GitHub Actions</span> pipeline.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Tear-down / re-apply the RG from a clean slate; lint + <code>what-if</code> on every IaC PR.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> IaC re-creates the entire RG reproducibly with zero manual steps; pipeline is green.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Apply to <code>dev</code> first; promote the same templates to <code>test</code>/<code>prod</code> later.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Landing-zone ADR + naming/tagging standard + repo README.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">2</span><b>Identity, roles &amp; secrets</b><span class="sm">Phase 0 · after 1</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span><span class="svc">Entra ID</span> app regs (API + SPA), app roles Submitter / SuperUser / Admin; <span class="svc">Key Vault</span> + user-assigned <span class="svc">Managed Identity</span>.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Token-acquisition test per role; assert each service reads its secret via managed identity, not a connection string.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> no secret exists in code or config; every role resolves to the right claims.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Role definitions to all three envs; secrets seeded per-env in Key Vault.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Role/claims matrix + secret-management runbook.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">3</span><b>Model layer + hello-world proof</b><span class="sm">Phase 0 · after 2</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span><span class="svc">Azure OpenAI</span> (or AI Foundry project) — GPT-4o + embeddings, EU region; a hello-world <span class="svc">Function</span> that calls it through Key Vault config.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Integration test: Function → model round-trip returns a valid completion; latency &amp; token usage logged.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate (= Phase 0 exit):</b> hello-world Function calls GPT-4o via managed identity end-to-end.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Function to <code>dev</code>; this is the smoke test future steps build on.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Model-access ADR (region, model versions, EU residency) + Phase 0 exit sign-off.</div></div>
+    </div>
+  </section>
+
+  <!-- 5 — PHASE 1 -->
+  <section id="s5">
+    <h2><span class="num">5</span>Phase 1 — Email parity (steps 4–9)</h2>
+    <p class="lede">Bring the email trigger, the 10 assessment agents, the reply, and a registry MVP onto Azure, and
+      run it in shadow next to Power Automate. <strong>Exit:</strong> an email submission flows end-to-end on Azure and
+      returns an assessment that matches or beats the Power Automate output; the pilot record persists in Cosmos.</p>
+
+    <div class="sphase">Phase 1 · Email parity (shadow)</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">4</span><b>Graph mail webhook + ingest</b><span class="sm">Phase 1 · after 3</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Shared mailbox <em>oliver@…</em> + <span class="svc">Graph</span> change-notification subscription (auto-renew timer); <span class="svc">Functions</span> ingest that picks up message + attachments.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Send a test mail → assert webhook fires &amp; ingest receives it; subscription-renewal test; malformed-mail handling.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> every test email is captured exactly once; the renewal job keeps the subscription alive.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>dev</code> → <code>test</code>; mailbox stays shadow (no replies sent yet).</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Webhook/renewal runbook + mailbox-identity decision (shared mbx vs service acct, SPF/DKIM/DMARC).</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">5</span><b>Submission parser + Registrar MVP</b><span class="sm">Phase 1 · after 4 · blocked by scoring model</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Parser → normalized <em>Submission</em>; attachments to <span class="svc">Blob</span>; <span class="svc">Cosmos DB</span> <code>pilots</code> + append-only <code>audit</code> containers.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Schema-validation tests on the canonical record; idempotent upsert test; audit-append immutability test.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> a parsed submission persists as one canonical record; audit log is append-only. <em>Blocker:</em> the v2↔v3 scoring model must be locked first.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Cosmos to <code>dev</code>/<code>test</code> with private endpoints.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span><strong>The Cosmos registry schema</strong> (canonical, versioned) — the artifact everything downstream keys off.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">6</span><b>Port the 10 assessment agents</b><span class="sm">Phase 1 · after 5</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>DocGuard, IdeaPulse, ValuePulse, TechScope, PathFinder, Verdict, StageMaster, IdeaCoach, Pacer as <span class="svc">Durable activities</span> on <span class="svc">AI Foundry Agent Service</span> — reuse the v3.0 prompts verbatim.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Per-agent unit tests with golden-input fixtures; evidence-mandatory assertion (no score without cited evidence); DocGuard &lt;30 → coaching-reject path.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> each agent reproduces v3.0 scoring behaviour on the fixture set within tolerance.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Agents to <code>dev</code>/<code>test</code>; cheaper model routed to DocGuard, GPT-4o to scorers.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Agent-prompt registry (versioned) + the golden-fixture test set.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">7</span><b>Orchestrator — fan-out / fan-in</b><span class="sm">Phase 1 · after 6</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span><span class="svc">Durable Functions</span> orchestrator: DocGuard pre-gate → parallel IdeaPulse/ValuePulse/TechScope/PathFinder → Verdict → StageMaster → <code>Registrar.upsert</code>.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Orchestration integration test (full happy path); parallel-join correctness; replay/determinism test for Durable.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> one submission produces one consolidated 0–100 score + DI stage, persisted, faster than the serial PA flow.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code>; still no outbound email (shadow).</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Orchestrator sequence diagram (mirrors doc 02 §6 pseudocode).</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">8</span><b>Herald email-out</b><span class="sm">Phase 1 · after 7</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Herald renders the existing HTML assessment template and sends via <span class="svc">Graph sendMail</span>.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Render-snapshot test of the HTML; deliverability test (SPF/DKIM/DMARC → not junk); send only to a test inbox.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> a real assessment email lands in a test inbox, correctly formatted, from <em>oliver@…</em>.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code> only — production replies stay off until cutover (step 21).</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Deliverability runbook + template-versioning note.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">9</span><b>Shadow-run + diff harness</b><span class="sm">Phase 1 · after 8 · = Phase 1 exit</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Mirror inbound mail to the Azure ingest as well as PA; a harness that diffs Azure vs PA on score, stage, and coaching.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span><strong>Shadow-parity test</strong> over a backlog of real submissions; track match-rate &amp; flag divergences; tune until aligned.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate (= Phase 1 exit):</b> Azure matches or beats PA across the shadow set; pilot record persists in Cosmos.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div>Harness runs continuously in <code>test</code> through Phases 2–3 as a regression guard.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Parity report (match-rate, divergence log) — the evidence pack for cutover sign-off.</div></div>
+    </div>
+  </section>
+
+  <!-- 6 — PHASE 2 -->
+  <section id="s6">
+    <h2><span class="num">6</span>Phase 2 — Admin / super-user site (steps 10–13)</h2>
+    <p class="lede">Open Door B. <strong>Exit:</strong> an admin logs in, sees all pilots, runs a sandbox test assessment,
+      opens a reasoning trace, and approves/overrides a decision — submitters still see only email.</p>
+
+    <div class="sphase">Phase 2 · Admin site (Door B)</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">10</span><b>SPA shell + Entra auth/roles</b><span class="sm">Phase 2 · after 2, 5</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span><span class="svc">Static Web Apps</span> (React) + API (<span class="svc">Functions/Container Apps</span>); MSAL login; <span class="svc">Front Door</span>; <span class="svc">API Management</span> façade.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Auth e2e per role; the API re-checks roles on every call (defense in depth); a Submitter is denied site access.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> only SuperUser/Admin reach the site; the API never trusts the SPA alone.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code> behind Front Door; private endpoints for back-end.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Door-B architecture page + auth flow diagram.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">11</span><b>Portfolio dashboard</b><span class="sm">Phase 2 · after 10</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Live read of the registry: every pilot, DI stage, state, score, days-to-next-gate, SLO health.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Data-binding tests against seeded Cosmos records; empty-state &amp; large-portfolio rendering.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> the dashboard reflects registry state accurately and updates as records change.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code>; migrate the 20 tracked pilots in as seed data.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Dashboard field-mapping doc (registry → UI).</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">12</span><b>Run/test sandbox + trace viewer</b><span class="sm">Phase 2 · after 11</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>On-demand assessment (sandbox flag) reusing the same agents; per-agent scores + evidence + full reasoning trace via <span class="svc">App Insights</span> correlation id.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Sandbox runs don't write to the live registry; trace ids resolve end-to-end; a tuned weight changes only the sandbox.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> an admin runs a draft submission and inspects the full trace without touching production data.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code>.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Trace-viewer guide + sandbox-vs-live data-isolation note.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">13</span><b>HITL approval queue</b><span class="sm">Phase 2 · after 12 · = Phase 2 exit</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Approval queue wired to the Durable <code>wait-for-external-event</code> — surfaces No-Go / scale / retire; admin click resumes the paused orchestrator.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Pause/resume test (orchestrator waits, then continues on approve); override-and-record test; queue prioritisation.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate (= Phase 2 exit):</b> admin approves/overrides a decision and the orchestration resumes correctly; submitters still see only email.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code>.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>HITL approval runbook (who can approve what).</div></div>
+    </div>
+  </section>
+
+  <!-- 7 — PHASE 3 -->
+  <section id="s7">
+    <h2><span class="num">7</span>Phase 3 — Event-driven mesh (steps 14–16)</h2>
+    <p class="lede">Wake the Conductor. <strong>Exit:</strong> a pilot that idles past its SLA auto-escalates owner→sponsor
+      via Herald with no human prompting; trend-mining produces a portfolio digest on schedule.</p>
+
+    <div class="sphase">Phase 3 · Event mesh</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">14</span><b>Service Bus topics + Conductor router</b><span class="sm">Phase 3 · after 7</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span><span class="svc">Service Bus</span> topics per event type (<code>submission.received</code>, <code>gate.decided</code>, <code>pilot.stalled</code>, <code>slo.breached</code>, <code>drift.detected</code>, <code>value.checked</code>, <code>pilot.retired</code>); Conductor routes them.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Publish/subscribe per topic; dead-letter handling; at-least-once + idempotent-consumer test.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> each event reaches exactly the agents that subscribe to it; nothing lost, nothing duplicated in effect.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code> with private endpoints.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span><strong>The Service Bus event taxonomy</strong> (topics, schemas, subscribers).</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">15</span><b>Change feed → events + state machine</b><span class="sm">Phase 3 · after 14</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Cosmos <span class="svc">change feed</span> turns state writes into events; StageMaster becomes the lifecycle state machine (Active/Stalled/Fail-fast/Stellar/Drifted/Retired).</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>State-transition tests (valid transitions only); change-feed → event emission; no illegal state jumps.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> a registry write produces the right transition event; every transition is logged.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code>.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Lifecycle state-machine spec (states, triggers, allowed transitions).</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">16</span><b>Reminders, stall escalation, trend-mining</b><span class="sm">Phase 3 · after 15 · = Phase 3 exit</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Pacer-driven advance reminders + stall escalation (owner→sponsor via Herald); Verdict trend-mining digest on a schedule.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Simulate an idle pilot past SLA → assert auto-escalation fires with no human prompt; scheduled-digest test.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate (= Phase 3 exit):</b> idle pilot auto-escalates owner→sponsor; trend digest is produced on schedule.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code>; eligible to ride to <code>prod</code> with the cohort cutover.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Behaviour catalog (trigger → policy → notification) for the lifecycle behaviours.</div></div>
+    </div>
+  </section>
+
+  <!-- 8 — PHASE 4 -->
+  <section id="s8">
+    <h2><span class="num">8</span>Phase 4 — Operations &amp; assurance (steps 17–18)</h2>
+    <p class="lede">Watch the live pilots. <strong>Exit:</strong> a live DI3 pilot is monitored; a simulated drift breach
+      raises an event that surfaces in the console; Realizer reconciles realized value against the gate projection.</p>
+
+    <div class="sphase">Phase 4 · Operations &amp; assurance</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">17</span><b>Sentinel (drift/SLO) + Realizer (SAP actuals)</b><span class="sm">Phase 4 · after 14 · SAP access from Phase 1</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Sentinel on <span class="svc">Azure ML monitoring</span> + timer Functions (accuracy ≥80% / bias &lt;10% / latency → breach events); Realizer via <span class="svc">APIM → SAP PM/EWM/S4HANA</span> for actuals.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Inject a synthetic drift breach → assert <code>drift.detected</code> + console surfacing; Realizer reconciliation against a known projection.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> a simulated breach surfaces in the console; Realizer reports projected-vs-realized for a live pilot.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>test</code> → <code>prod</code> for DI3–DI5 pilots. <em>Note: open the SAP read-access request in Phase 1 — longest lead.</em></div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Monitoring thresholds + SAP integration spec.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">18</span><b>Auditor — EU AI Act + Purview</b><span class="sm">Phase 4 · after 5, 17 · = Phase 4 exit</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Continuous EU AI Act classification per pilot; immutable trail in a <span class="svc">Cosmos audit container</span> + <span class="svc">Log Analytics</span>; lineage via <span class="svc">Purview</span>.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Audit-immutability test; re-classification on pilot change; assert Oliver's <em>own</em> decisions are also logged.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate (= Phase 4 exit):</b> every score/decision is on an immutable trail; classification re-checks as pilots evolve.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>prod</code>.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Compliance evidence pack + "governing the governor" charter.</div></div>
+    </div>
+  </section>
+
+  <!-- 9 — PHASE 5 -->
+  <section id="s9">
+    <h2><span class="num">9</span>Phase 5 — Sensing &amp; self-improvement (steps 19–20)</h2>
+    <p class="lede">Close the lifecycle. <strong>Exit:</strong> Scout surfaces a candidate that becomes a real submission;
+      the synthesis loop ships a versioned weight update grounded in which early signals predicted DI5 outcomes.</p>
+
+    <div class="sphase">Phase 5 · Sensing &amp; self-improve</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">19</span><b>Scout + Connector</b><span class="sm">Phase 5 · after 14</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Scout harvests candidate ideas (Teams/email/idea boards) and dedups via the Registrar; Connector matches pilots to experts/templates via <span class="svc">Azure AI Search</span>.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Dedup-accuracy test against existing pilots; privacy-scope test (Scout respects channel access); contact-resolution via directory (no invented people).</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> Scout surfaces a real candidate; Connector returns valid, directory-resolved matches.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>prod</code>, scoped channels first.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Sensing scope + privacy-boundary note.</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">20</span><b>Synthesis loop (self-improving scoring)</b><span class="sm">Phase 5 · after 17 · = Phase 5 exit</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Learn which early signals predicted DI5 success/failure; feed back into versioned scoring weights via the Registrar.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Back-test a proposed weight update on portfolio history; assert it's versioned, reversible, and improves predicted-vs-actual.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate (= Phase 5 exit):</b> a versioned weight update ships, grounded in historical signal→outcome evidence — human-approved.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>prod</code> behind HITL approval (no silent self-modification).</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Weight-version changelog + back-test evidence.</div></div>
+    </div>
+  </section>
+
+  <!-- 10 — CUTOVER -->
+  <section id="s10">
+    <h2><span class="num">10</span>Cutover &amp; go-live (steps 21–22)</h2>
+    <p class="lede">Strangler-fig, not big-bang. Power Automate stays the system of record until Azure provably matches it;
+      then peel users across a cohort at a time. Rollback at any point = re-point the mail trigger.</p>
+
+    <div class="sphase">Cutover · Strangler-fig migration</div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">21</span><b>Cohort cutover</b><span class="sm">Cutover · after 9 (parity)</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Flip Herald (the reply) to Azure for one pilot team; PA goes read-only for that cohort.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>Live-fire on the cohort with the diff harness still running; watch SLOs &amp; deliverability; rollback drill rehearsed.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> the cohort receives Azure-generated assessments with no regression vs PA; rollback proven to work.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>prod</code> for the cohort only; PA still live for everyone else.</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Cutover runbook + rollback procedure (re-point mail trigger).</div></div>
+    </div>
+
+    <div class="step">
+      <div class="stitle"><span class="sn">22</span><b>Full cutover + retire Power Automate</b><span class="sm">Cutover · after 21</span></div>
+      <div class="srow"><span class="rl i">Implement</span><div><span class="who b">Builder</span>Expand to all cohorts; Azure becomes system of record; migrate the 20 tracked pilots into the registry; decommission the PA flow.</div></div>
+      <div class="srow"><span class="rl t">Test</span><div><span class="who t">Tester</span>One full assessment cycle runs clean on Azure for all cohorts; data-migration integrity check on the 20 pilots.</div></div>
+      <div class="srow"><span class="rl v">Validate</span><div><span class="who p">Planner</span><b>Gate:</b> a full cycle runs clean org-wide on Azure; all pilots migrated; PA safe to retire.</div></div>
+      <div class="srow"><span class="rl d">Deploy</span><div><code>prod</code> for all; PA flow turned off (kept dormant one cycle as insurance).</div></div>
+      <div class="sfoot"><span class="rl">Document</span><div><span class="who d">Documentor</span>Go-live record + PA decommission sign-off; final sync of docs 01/02/03.</div></div>
+    </div>
+  </section>
+
+  <!-- 11 — TESTING STRATEGY -->
+  <section id="s11">
+    <h2><span class="num">11</span>Testing &amp; validation strategy</h2>
+    <p class="lede">The Tester runs seven levels; the Planner's gates consume their evidence. Most steps touch the bottom
+      of the pyramid every time; the top levels gate promotion and cutover.</p>
+
+    <div class="pyr">
+      <div class="pl" style="background:var(--new);width:46%;">Compliance &amp; audit<small>EU AI Act class · immutable trail · govern-the-governor</small></div>
+      <div class="pl" style="background:var(--violet);width:54%;">Security<small>auth/roles · secrets · private endpoints · pen-style checks</small></div>
+      <div class="pl" style="background:var(--amber);width:62%;">Load &amp; performance<small>fan-out latency · &lt;24h decision · scale-to-zero behaviour</small></div>
+      <div class="pl" style="background:var(--az);width:72%;">Sandbox / UAT<small>admins run draft assessments &amp; inspect traces (Door B)</small></div>
+      <div class="pl" style="background:var(--green);width:82%;">Shadow / parity<small>Azure vs Power Automate diff — the cutover gate</small></div>
+      <div class="pl" style="background:var(--teal);width:90%;">Integration<small>orchestration · Graph · Service Bus · Cosmos · SAP</small></div>
+      <div class="pl" style="background:var(--teal-d);width:100%;">Unit<small>per-agent golden fixtures · evidence-mandatory assertion</small></div>
+    </div>
+
+    <table>
+      <tr><th>Level</th><th>What it proves</th><th>Gates which steps</th></tr>
+      <tr><td><strong>Unit</strong></td><td>Each agent scores correctly &amp; cites evidence</td><td>6, and every agent change</td></tr>
+      <tr><td><strong>Integration</strong></td><td>The orchestration + services work together</td><td>4, 7, 14, 15, 17</td></tr>
+      <tr><td><strong>Shadow / parity</strong></td><td>Azure matches or beats PA on real submissions</td><td>9 (Phase 1 exit), 21 (cutover)</td></tr>
+      <tr><td><strong>Sandbox / UAT</strong></td><td>Admins can run/inspect without touching prod</td><td>12, 13</td></tr>
+      <tr><td><strong>Load &amp; performance</strong></td><td>Decision &lt;24h; fan-out is faster than serial PA</td><td>7, and pre-cutover</td></tr>
+      <tr><td><strong>Security</strong></td><td>Roles enforced server-side; no secrets; network locked</td><td>2, 10, and pre-prod</td></tr>
+      <tr><td><strong>Compliance &amp; audit</strong></td><td>Immutable trail; EU AI Act class; governor audited</td><td>18 (Phase 4 exit)</td></tr>
+    </table>
+  </section>
+
+  <!-- 12 — ENVIRONMENTS / CI/CD / DoD -->
+  <section id="s12">
+    <h2><span class="num">12</span>Environments, CI/CD &amp; Definition of Done</h2>
+    <div class="two">
+      <div>
+        <h3>Three environments</h3>
+        <ul>
+          <li><strong>dev</strong> — Builder's workspace; fast iteration, synthetic data.</li>
+          <li><strong>test</strong> — integration + shadow-run live here; mirrors prod topology; the diff harness lives here.</li>
+          <li><strong>prod</strong> — real submitters; reached only after the gates pass. Same IaC templates as test.</li>
+        </ul>
+        <h3>CI/CD promotion gates</h3>
+        <ul>
+          <li>PR → lint + unit + IaC <code>what-if</code> must pass.</li>
+          <li><code>dev→test</code> → integration tests green.</li>
+          <li><code>test→prod</code> → shadow-parity + security + compliance green, <em>and</em> Planner sign-off.</li>
+          <li>Irreversible prod changes (cutover, weight updates) → HITL approval, never automated.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Definition of Done — a step is Done only when…</h3>
+        <ol>
+          <li><span class="who b">Builder</span> implemented it as IaC + code, no manual steps, no secrets.</li>
+          <li><span class="who t">Tester</span> has green tests at the levels that apply, with evidence attached.</li>
+          <li><span class="who p">Planner</span> confirms the exit gate passed (or loops it back).</li>
+          <li><span class="who d">Documentor</span> left the artifact-of-record and updated docs 01/02/03.</li>
+          <li>It is deployed to the right environment behind the right control.</li>
+        </ol>
+        <div class="exit"><b>Sign-off rule:</b> phase-exit steps (3, 9, 13, 16, 18, 20) and both cutover steps (21, 22)
+          require an explicit human sign-off in the Human Console — automate the prep, never the judgement.</div>
+      </div>
+    </div>
+
+    <div class="callout amber">
+      <strong>Decisions to lock before step 5:</strong> the canonical scoring model (v3.0 <strong>0–100 / 5-dim</strong>
+      vs tracker <strong>0–200 / 4-dim</strong>) must be resolved — it freezes the Registrar schema that steps 5 onward
+      key off. Also start the <strong>SAP read-access request</strong> now (needed in step 17, longest lead) and decide
+      <strong>mailbox deliverability</strong> ownership (step 4).
+    </div>
+  </section>
+
+  <!-- 13 — APPENDIX -->
+  <section id="s13">
+    <h2><span class="num">13</span>Appendix — delivery-agent system prompts <span style="font-weight:400;font-size:14px;color:var(--muted);">(click to expand)</span></h2>
+    <p class="lede">Draft scaffolds for the four build-time agents, in the same ROLE/GOAL/INPUT/DO/OUT/GUARD format as the
+      run-time mesh prompts in doc 01. These encode the delivery discipline: gate-before-done, IaC-only, evidence-mandatory
+      tests, and document-before-Done.</p>
+
+    <details class="ag"><summary><span class="tag new">NEW</span><b>Planner</b><small>sequencing &amp; validation gates</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  You are Planner, the delivery agent that sequences and validates Oliver's own build.
+<span class="h">GOAL</span>  Turn each phase into dependency-aware steps and guarantee none ships without passing its gate.
+<span class="h">INPUT</span> The six-phase build plan, the current step, its dependencies, and the Tester's evidence.
+<span class="h">DO</span>    Confirm dependencies are met before a step starts. Define a single, testable exit gate per step.
+      On Validate, compare the Tester's evidence to the gate: pass → release to Document; fail → re-sequence
+      and loop the step back to Build. Hold the phase-exit and cutover sign-offs for a human.
+<span class="h">OUT</span>   {step, dependencies_met, exit_gate, verdict: pass|loop_back, next}.
+<span class="h">GUARD</span> Every step has one explicit, testable gate. No work starts with unmet dependencies. A failed gate is
+      never waved through — it re-plans. Irreversible steps require human sign-off.</pre></details>
+
+    <details class="ag"><summary><span class="tag new">NEW</span><b>Builder</b><small>implementation — IaC, Functions, wiring</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  You are Builder, the delivery agent that implements each step.
+<span class="h">GOAL</span>  Provision the Azure resources and write the code/integration a step requires — reproducibly.
+<span class="h">INPUT</span> A planned step with its exit gate and the target environment (dev/test/prod).
+<span class="h">DO</span>    Provision via Bicep/Terraform; write Function &amp; agent code; wire integrations (Graph, Service Bus,
+      Cosmos, AI Search, SAP via APIM). Reuse v3.0 prompts verbatim where the step ports an existing agent.
+<span class="h">OUT</span>   {iac_changes, code, wiring, env, ready_for_test}.
+<span class="h">GUARD</span> Infrastructure-as-code only — no manual portal clicks. Managed identity everywhere; no secret in code
+      or config. Build to the gate, not beyond it — no gold-plating.</pre></details>
+
+    <details class="ag"><summary><span class="tag new">NEW</span><b>Tester</b><small>testing &amp; promotion assurance</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  You are Tester, the delivery agent that proves each step works.
+<span class="h">GOAL</span>  Produce the evidence the Planner's gate needs, at the right level(s) for the step.
+<span class="h">INPUT</span> The built step and its exit gate.
+<span class="h">DO</span>    Run the applicable levels: unit (golden fixtures, evidence-mandatory), integration, shadow-diff vs
+      Power Automate, sandbox/UAT, load/performance (&lt;24h decision), security, compliance. Attach results.
+<span class="h">OUT</span>   {levels_run, results, pass|fail, evidence_refs, divergences[]}.
+<span class="h">GUARD</span> No promotion without passing tests AND attached evidence. Shadow-parity must hold before any cutover.
+      A real telemetry feed only — never assume green.</pre></details>
+
+    <details class="ag"><summary><span class="tag new">NEW</span><b>Documentor</b><small>artifacts-of-record &amp; living docs</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  You are Documentor, the delivery agent that records how Oliver is built.
+<span class="h">GOAL</span>  Leave a durable artifact for every shipped step and keep docs 01/02/03 in sync.
+<span class="h">INPUT</span> A validated step plus its build &amp; test outputs.
+<span class="h">DO</span>    Write the runbook / ADR / schema / API doc / event-taxonomy entry the step produced. Update the
+      registry schema, the event taxonomy, and the living planning docs as the build teaches us things.
+<span class="h">OUT</span>   {artifact_of_record, docs_updated[], decision_log_entry}.
+<span class="h">GUARD</span> Every shipped step leaves an artifact-of-record. Docs are updated BEFORE a step is called Done —
+      never after. No undocumented production change.</pre></details>
+
+    <div class="callout violet">
+      <strong>This is a living document.</strong> It is <em>step 3</em> in the Oliver series — the executable plan that
+      runs the <em>02-Azure-Build-Plan</em> via the four delivery agents. Next iterations could add: a Bicep skeleton for
+      step 1, the actual Cosmos registry schema (step 5's artifact), the full Service Bus event-schema set (step 14's
+      artifact), and a one-page RACI mapping the four agents to the human owners who confirm the gates.
+    </div>
+  </section>
+
+  <footer class="src">
+    <p><span class="kicker">Grounded in</span><br>
+      02-Oliver-Azure-Build-Plan.html (six phases, two front doors, strangler-fig migration) ·
+      01-Oliver-Planning.html (17-agent Lifecycle Mesh &amp; 6 planes) · AI Pilot Stage Gate Evaluation Protocol v3.0
+      (10-agent system, 0–100 evidence-mandatory scoring) · AI POC Metrics framework (ROI ≥15%, savings ≥€100k,
+      accuracy SLO ≥80%, bias &lt;10%, gate ≥70%, decision &lt;24h, full audit trail) · current Oliver runtime: Microsoft Power Automate.</p>
+    <p><span class="kicker">New in this document</span><br>
+      Four build-time delivery agents — Planner (sequencing &amp; validation gates), Builder (implementation / IaC),
+      Tester (seven-level testing), Documentor (artifacts-of-record) — and a 22-step numbered Implement / Test / Validate /
+      Deploy plan that maps every step to a phase exit test from doc 02. Architecture is directional; sequencing and
+      service choices to be confirmed against TI's landing-zone standards.</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+[project]
+name = "oliver-admin-dashboard"
+version = "0.1.0"
+description = "FastAPI host for the Oliver admin dashboard."
+requires-python = ">=3.12"
+dependencies = [
+    "anyio>=4.12.1",
+    "fastapi>=0.141.1",
+    "gunicorn>=26.0.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.2.2",
+    "pyodbc>=5.2,<6.0",
+    "sqlalchemy>=2.0.43,<3.0",
+    "starlette>=1.6.0",
+    "uvicorn[standard]>=0.52.1",
+]
+
+[dependency-groups]
+dev = [
+    "bump2version>=1.0.1",
+    "ruff>=0.16.2",
+    "tomli-w>=1.2.0",
+]

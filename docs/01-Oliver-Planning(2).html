@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oliver — From Stage-Gate to AI Lifecycle Mesh · Planning</title>
+<style>
+  :root{
+    --teal:#7c3aed; --teal-d:#5b21b6; --teal-l:#f2ecfc;
+    --ink:#1f2933; --muted:#5b6b78; --line:#e2e8ec; --bg:#f4f6f7;
+    --amber:#D97706; --amber-bg:#fffbeb; --green:#9333ea; --green-bg:#faf5ff;
+    --blue:#1D4ED8; --blue-bg:#eff6ff; --violet:#6b3fa0; --violet-bg:#f5f0fb;
+    --new:#b91c1c; --new-bg:#fef2f2;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);
+    background:var(--bg);line-height:1.6;margin:0;padding:0 0 60px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+  header.hero{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;
+    padding:40px 22px 34px;}
+  header.hero .wrap{padding:0 0;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;margin:0 0 8px;}
+  header.hero h1{margin:0;font-size:30px;line-height:1.2;}
+  header.hero p.sub{margin:12px 0 0;font-size:17px;opacity:.95;max-width:760px;}
+  .meta{margin-top:18px;font-size:13px;opacity:.8;}
+  section{background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:26px 28px;margin:22px 0;}
+  h2{color:var(--teal-d);font-size:21px;margin:0 0 4px;}
+  h2 .num{display:inline-block;background:var(--teal);color:#fff;border-radius:6px;
+    width:30px;height:30px;line-height:30px;text-align:center;font-size:15px;margin-right:10px;}
+  .lede{color:var(--muted);font-size:15px;margin:6px 0 18px;}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--ink);}
+  p{margin:10px 0;}
+  ul,ol{margin:10px 0;padding-left:22px;}
+  li{margin:6px 0;}
+  .callout{border-left:4px solid var(--teal);background:var(--teal-l);padding:14px 18px;
+    border-radius:0 8px 8px 0;margin:16px 0;font-size:15px;}
+  .callout.amber{border-color:var(--amber);background:var(--amber-bg);}
+  .callout.violet{border-color:var(--violet);background:var(--violet-bg);}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0;}
+  th{background:#f3f6f7;text-align:left;padding:10px 12px;border-bottom:2px solid var(--teal);
+    color:var(--teal-d);font-size:13px;}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;
+    white-space:nowrap;}
+  .tag.exist{background:var(--teal-l);color:var(--teal-d);}
+  .tag.new{background:var(--new-bg);color:var(--new);}
+  /* contrast cards */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
+  .card{border:1px solid var(--line);border-radius:9px;padding:18px;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card.gate{background:var(--blue-bg);border-color:#bfd5fb;}
+  .card.gate h4{color:var(--blue);}
+  .card.life{background:var(--green-bg);border-color:#e6d4fb;}
+  .card.life h4{color:var(--green);}
+  /* pipeline chips */
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-size:13px;}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 10px;}
+  .chip.k{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:600;}
+  .arrow{color:var(--muted);font-weight:700;}
+  /* planes diagram */
+  .mesh{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0;}
+  .plane{border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .plane .ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    border-bottom:1px dashed var(--line);padding-bottom:8px;margin-bottom:10px;}
+  .plane .ph b{font-size:15px;color:var(--teal-d);}
+  .plane .ph span{font-size:12px;color:var(--muted);}
+  .agents{display:flex;flex-wrap:wrap;gap:8px;}
+  .agent{border-radius:8px;padding:8px 11px;font-size:13px;border:1px solid;min-width:0;}
+  .agent b{display:block;font-size:13px;}
+  .agent small{color:var(--muted);font-size:11.5px;}
+  .agent.e{background:var(--teal-l);border-color:#d8c7f5;}
+  .agent.n{background:var(--new-bg);border-color:#f3c4c4;}
+  .agent.e b{color:var(--teal-d);} .agent.n b{color:var(--new);}
+  .legend{font-size:12px;color:var(--muted);margin:6px 0 0;}
+  .legend .tag{margin-right:4px;}
+  /* horizons */
+  .horizon{border-left:4px solid var(--teal);padding:6px 0 6px 18px;margin:18px 0;}
+  .horizon h3{margin:0 0 2px;color:var(--teal-d);}
+  .horizon .when{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .pill{font-size:12px;background:#f3f6f7;border:1px solid var(--line);border-radius:20px;padding:3px 10px;}
+  .risk td:first-child{font-weight:600;white-space:nowrap;}
+  footer.src{font-size:12px;color:var(--muted);margin-top:8px;}
+  .kicker{font-size:13px;color:var(--teal-d);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  /* stat band */
+  .statband{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0 8px;}
+  .statc{border:1px solid var(--line);border-radius:11px;padding:18px 16px;text-align:center;
+    background:linear-gradient(180deg,#fff,#fafcfc);}
+  .statc .big{font-size:38px;line-height:1;font-weight:800;color:var(--new);letter-spacing:-.02em;}
+  .statc.t .big{color:var(--teal-d);} .statc.a .big{color:var(--amber);}
+  .statc .lab{font-size:13px;color:var(--ink);margin:8px 0 4px;font-weight:600;}
+  .statc .src{font-size:11px;color:var(--muted);}
+  /* comparison bars */
+  .bars{margin:16px 0 6px;}
+  .barrow{display:grid;grid-template-columns:170px 1fr;gap:12px;align-items:center;margin:10px 0;}
+  .barrow .bl{font-size:13px;color:var(--ink);}
+  .track{background:#eef2f4;border-radius:7px;height:30px;position:relative;overflow:hidden;}
+  .fill{height:100%;border-radius:7px;display:flex;align-items:center;justify-content:flex-end;
+    padding-right:10px;color:#fff;font-size:13px;font-weight:700;}
+  .fill.hi{background:linear-gradient(90deg,#dc2626,#b91c1c);}
+  .fill.lo{background:linear-gradient(90deg,#a78bfa,#5b21b6);}
+  .barnote{font-size:12px;color:var(--muted);margin:4px 0 0;}
+  /* SDLC vs ADLC contrast */
+  .vs th:first-child{width:24%;}
+  .vs td:first-child{font-weight:600;color:var(--ink);white-space:nowrap;}
+  .vs .det{color:var(--blue);} .vs .prob{color:var(--green);font-weight:600;}
+  .vs td.col-det{background:var(--blue-bg);} .vs td.col-prob{background:var(--green-bg);}
+  .maptab td:first-child{font-weight:600;white-space:nowrap;color:var(--new);}
+  .maptab td:nth-child(2){color:var(--muted);}
+  .maptab .lands .tag{margin-right:4px;}
+  /* lifecycle states */
+  .states{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0;}
+  .st{border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;border:1px solid;}
+  .st small{display:block;font-weight:400;font-size:11px;opacity:.85;}
+  .st.active{background:var(--green-bg);border-color:#e6d4fb;color:var(--green);}
+  .st.warn{background:var(--amber-bg);border-color:#f5d9a8;color:var(--amber);}
+  .st.kill{background:var(--new-bg);border-color:#f3c4c4;color:var(--new);}
+  .st.star{background:var(--teal-l);border-color:#d8c7f5;color:var(--teal-d);}
+  .st.end{background:#eef2f4;border-color:var(--line);color:var(--muted);}
+  .branch{color:var(--muted);font-weight:700;font-size:13px;}
+  /* behavior cards */
+  .behaviors{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;}
+  .bx{border:1px solid var(--line);border-radius:10px;padding:15px 16px;background:#fff;}
+  .bx h4{margin:0 0 6px;font-size:14.5px;color:var(--teal-d);display:flex;align-items:center;gap:8px;}
+  .bx .ic{width:24px;height:24px;border-radius:6px;background:var(--teal-l);color:var(--teal-d);
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none;}
+  .bx p{margin:6px 0;font-size:13px;}
+  .bx .trig{font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:8px;}
+  .bx .trig b{color:var(--ink);}
+  /* table of contents */
+  .toc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 22px;margin:22px 0;}
+  .toc .th{font-size:13px;color:var(--teal-d);margin:0 0 12px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;}
+  .toc ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 22px;}
+  .toc li{margin:0;}
+  .toc a{display:flex;gap:11px;align-items:center;text-decoration:none;color:var(--ink);font-size:14px;
+    padding:6px 8px;border-radius:7px;transition:background .15s;}
+  .toc a:hover{background:var(--teal-l);color:var(--teal-d);}
+  .toc a .n{flex:none;width:26px;height:24px;line-height:24px;text-align:center;background:var(--teal-l);
+    color:var(--teal-d);border-radius:6px;font-size:12px;font-weight:700;}
+  /* expandable agent prompts */
+  .grp{margin:20px 0;}
+  .grp .gh{font-size:15px;color:var(--teal-d);font-weight:700;margin:0 0 4px;display:flex;align-items:center;gap:9px;}
+  .grp .gh .pn{background:var(--teal);color:#fff;border-radius:6px;min-width:26px;height:24px;line-height:24px;
+    text-align:center;font-size:13px;}
+  .grp .gs{font-size:12.5px;color:var(--muted);margin:0 0 10px 35px;}
+  details.ag{border:1px solid var(--line);border-radius:9px;margin:8px 0;overflow:hidden;}
+  details.ag summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px;
+    background:#fbfafe;font-size:14px;}
+  details.ag summary::-webkit-details-marker{display:none;}
+  details.ag summary .tw{margin-left:auto;color:var(--teal);font-size:20px;line-height:1;font-weight:300;
+    transition:transform .2s;flex:none;}
+  details.ag[open] summary .tw{transform:rotate(45deg);}
+  details.ag[open] summary{border-bottom:1px solid var(--line);}
+  details.ag summary small{color:var(--muted);font-size:12px;}
+  pre.prompt{margin:0;padding:15px 17px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+    line-height:1.6;color:#3a3550;background:#faf8ff;white-space:pre-wrap;word-break:break-word;}
+  pre.prompt .h{color:var(--teal-d);font-weight:700;}
+  @media(max-width:760px){.split,.two,.statband,.behaviors,.toc ol{grid-template-columns:1fr;}
+    .barrow{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Siemens Energy · TI · Working Document v0.1</p>
+    <h1>Oliver: From Stage-Gating Agent to AI Lifecycle Mesh</h1>
+    <p class="sub">A view on how to start with Oliver as a pilot stage-gating agent today — and deliberately
+      grow it into a multi-agent system that manages the entire AI lifecycle, DI1 through DI5 and beyond.</p>
+    <div class="meta">Owner: Anand Sengupta (SE TI TTF) · Drafted 2026-06-05 · Status: thinking-it-through</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- TABLE OF CONTENTS -->
+  <nav class="toc">
+    <p class="th">Contents</p>
+    <ol>
+      <li><a href="#s0"><span class="n">0</span>The thesis in one paragraph</a></li>
+      <li><a href="#s1"><span class="n">1</span>Where Oliver is today</a></li>
+      <li><a href="#s2"><span class="n">2</span>Why AI projects are not digital projects</a></li>
+      <li><a href="#s3"><span class="n">3</span>The core insight — gate vs. continuum</a></li>
+      <li><a href="#s4"><span class="n">4</span>Target architecture — the Lifecycle Mesh</a></li>
+      <li><a href="#s5"><span class="n">5</span>How today's agents generalise</a></li>
+      <li><a href="#s6"><span class="n">6</span>The new agents to build</a></li>
+      <li><a href="#s7"><span class="n">7</span>The behaviors the mesh must run</a></li>
+      <li><a href="#s8"><span class="n">8</span>Evolution roadmap — three horizons</a></li>
+      <li><a href="#s9"><span class="n">9</span>Design principles to hold onto</a></li>
+      <li><a href="#s10"><span class="n">10</span>Open questions &amp; risks</a></li>
+      <li><a href="#s11"><span class="n">11</span>Suggested next steps</a></li>
+      <li><a href="#s12"><span class="n">12</span>Appendix — agent system prompts (expandable)</a></li>
+    </ol>
+  </nav>
+
+  <!-- 0. TL;DR -->
+  <section id="s0">
+    <h2><span class="num">0</span>The thesis in one paragraph</h2>
+    <p>Oliver today is a <strong>point-in-time assessor</strong>: a submission arrives, ten agents score it,
+      it gets a DI stage and a coaching email. That is a <em>gate</em> — a moment. AI lifecycle management is a
+      <em>continuum</em>. The opportunity is to keep the gate as the entry point but extend the same multi-agent
+      pattern across the <strong>whole life of a pilot</strong> — sensing ideas, coaching them between gates,
+      monitoring deployed models, and proving the value actually landed. Concretely: keep the 10 agents,
+      add a <strong>living registry</strong> as shared memory, add an <strong>operations &amp; assurance</strong>
+      cluster for live pilots, and put an <strong>orchestrator + event bus</strong> underneath so the system
+      becomes continuous instead of one-shot.</p>
+    <div class="callout">
+      <strong>The one-line shift:</strong> Oliver stops answering <em>"should this idea pass the gate?"</em>
+      and starts answering <em>"is every AI initiative in our portfolio moving, healthy, compliant, and
+      delivering — right now?"</em>
+    </div>
+  </section>
+
+  <!-- 1. Where Oliver is today -->
+  <section id="s1">
+    <h2><span class="num">1</span>Where Oliver is today — the stage-gating agent</h2>
+    <p class="lede">Grounded in the <em>AI Pilot Stage Gate Evaluation Protocol v3.0</em> (System: Oliver — Multi-Agent AI Pilot Assessment).</p>
+
+    <p>Oliver v3.0 is a <strong>10-agent assessment pipeline</strong> with a deliberate design principle —
+      <em>"enable ideas to succeed, not gatekeep them out; financial rigour enters progressively."</em>
+      It scores on a unified 0–100 scale, applies <strong>stage-adaptive weights</strong> (idea quality dominates
+      at DI1–2; business impact &amp; execution gain weight at DI3–5), and a low DocGuard score (&gt;30 to enter)
+      routes to a coaching rejection rather than a hard no.</p>
+
+    <h3>The DI1–DI5 maturity spine</h3>
+    <div class="flow">
+      <span class="chip k">DI1 Concept<br><small>worth investigating?</small></span><span class="arrow">→</span>
+      <span class="chip k">DI2 Pilot<br><small>learning something?</small></span><span class="arrow">→</span>
+      <span class="chip k">DI3 Test<br><small>works beyond lab?</small></span><span class="arrow">→</span>
+      <span class="chip k">DI4 Implement<br><small>ready for prod?</small></span><span class="arrow">→</span>
+      <span class="chip k">DI5 Scale<br><small>replicate org-wide?</small></span>
+    </div>
+
+    <h3>The current pipeline (one submission, one pass)</h3>
+    <div class="flow">
+      <span class="chip">Email/idea in</span><span class="arrow">→</span>
+      <span class="chip">DocGuard <small>completeness</small></span><span class="arrow">→</span>
+      <span class="chip">IdeaPulse</span><span class="arrow">→</span>
+      <span class="chip">ValuePulse</span><span class="arrow">→</span>
+      <span class="chip">TechScope</span><span class="arrow">→</span>
+      <span class="chip">PathFinder</span><span class="arrow">→</span>
+      <span class="chip">Verdict <small>consolidate</small></span><span class="arrow">→</span>
+      <span class="chip">StageMaster <small>DI level</small></span><span class="arrow">→</span>
+      <span class="chip">IdeaCoach</span><span class="arrow">→</span>
+      <span class="chip">Pacer</span><span class="arrow">→</span>
+      <span class="chip">Herald <small>email + Teams</small></span><span class="arrow">→</span>
+      <span class="chip">Human review</span>
+    </div>
+
+    <div class="callout">
+      <strong>What's already strong and worth preserving:</strong> evidence-mandatory scoring, a coaching ethos
+      (IdeaCoach), a human-in-the-loop endpoint, and an audit trail by design. These are exactly the properties a
+      lifecycle system needs — Oliver was built on the right foundations.
+    </div>
+  </section>
+
+  <!-- 2. Why AI projects are not digital projects -->
+  <section id="s2">
+    <h2><span class="num">2</span>Why AI projects are not digital projects — and why that demands a lifecycle, not a gate</h2>
+    <p class="lede">The case for the mesh isn't aesthetic. AI initiatives fail differently, and far more often, than the
+      IT projects our stage-gates were designed for. The research is now unambiguous.</p>
+
+    <div class="statband">
+      <div class="statc">
+        <div class="big">95%</div>
+        <div class="lab">of enterprise GenAI pilots deliver no measurable P&amp;L impact</div>
+        <div class="src">MIT NANDA, “The GenAI Divide,” 2025</div>
+      </div>
+      <div class="statc">
+        <div class="big">&gt;80%</div>
+        <div class="lab">of AI projects fail — roughly twice the rate of non-AI IT projects</div>
+        <div class="src">RAND Corporation, 2024</div>
+      </div>
+      <div class="statc a">
+        <div class="big">$12.9M</div>
+        <div class="lab">average annual cost of poor data quality — the No. 1 reason AI stalls</div>
+        <div class="src">Gartner</div>
+      </div>
+    </div>
+
+    <h3>The failure gap, drawn to scale</h3>
+    <div class="bars">
+      <div class="barrow"><div class="bl">AI / ML projects</div>
+        <div class="track"><div class="fill hi" style="width:82%;">~80%+ fail</div></div></div>
+      <div class="barrow"><div class="bl">Traditional IT projects</div>
+        <div class="track"><div class="fill lo" style="width:40%;">~40% fail</div></div></div>
+    </div>
+    <p class="barnote">Source: RAND (2024) — AI projects fail at roughly double the rate of conventional software delivery.
+      The gap is not bad luck; it is structural. The five most-cited root causes — misunderstood intent,
+      missing/poor data, chasing the latest tech over the problem, inadequate infrastructure, and problems too hard
+      for current AI — are all things a one-shot intake gate cannot catch on its own.</p>
+
+    <h3>Five structural differences (and why a gate alone can't manage them)</h3>
+    <table class="vs">
+      <tr><th>Dimension</th><th class="det">Traditional digital / SDLC</th><th class="prob">AI initiative / ADLC</th></tr>
+      <tr><td>Behaviour</td>
+        <td class="col-det">Deterministic — same input, same output; testable against a spec</td>
+        <td class="col-prob">Probabilistic — outputs are distributions; “correct” is statistical, can be confidently wrong</td></tr>
+      <tr><td>What it depends on</td>
+        <td class="col-det">Code quality &amp; logic</td>
+        <td class="col-prob">Data quality, freshness &amp; representativeness — a data-engineering problem first</td></tr>
+      <tr><td>Deployment</td>
+        <td class="col-det">The finish line — ship and maintain</td>
+        <td class="col-prob">The starting line — performance only becomes real, and observable, in production</td></tr>
+      <tr><td>Over time</td>
+        <td class="col-det">Stable until requirements change</td>
+        <td class="col-prob">Degrades on its own — data &amp; concept drift erode accuracy without any code change</td></tr>
+      <tr><td>Definition of done</td>
+        <td class="col-det">Meets requirements once</td>
+        <td class="col-prob">Continuously meets a threshold (e.g. SLO ≥80%, bias &lt;10%) and proves value landed</td></tr>
+    </table>
+    <p class="barnote">SDLC→ADLC framing synthesised from current MLOps / AI-lifecycle literature (Talentica, 2026; industry MLOps practice).
+      The MIT finding is sharper still: the divide isn’t model quality — it’s a <strong>“learning gap.”</strong>
+      Systems that don’t retain feedback, adapt, and improve in production stall in “pilot purgatory,” while the few
+      that close the loop capture the value. McKinsey similarly finds the 16–30% productivity gains accrue to teams
+      that treat AI as a collaborator to be coached over time — not a tool to be shipped once.</p>
+
+    <div class="callout amber">
+      <strong>The throughline:</strong> every one of these differences plays out <em>after</em> the gate —
+      in production, over time, against drifting data. A point-in-time assessor is necessary but
+      structurally insufficient. The thing that manages a probabilistic, data-dependent, self-degrading,
+      value-on-promise asset is a <strong>continuous lifecycle</strong> — which is exactly what the mesh adds.
+    </div>
+
+    <h3>So what — each AI-specific risk maps to a part of the mesh</h3>
+    <table class="maptab">
+      <tr><th>AI-specific failure mode (from the research)</th><th>Why digital playbooks miss it</th><th class="lands">Where the mesh catches it</th></tr>
+      <tr><td>The “learning gap” — no feedback loop, pilot purgatory <small>(MIT)</small></td>
+        <td>Gates assess once and go quiet</td>
+        <td class="lands"><span class="tag new">Registrar</span> memory + continuous re-assessment</td></tr>
+      <tr><td>Silent model drift / accuracy decay <small>(ADLC)</small></td>
+        <td>No spec change to trigger a re-test</td>
+        <td class="lands"><span class="tag new">Sentinel</span> drift &amp; SLO watch</td></tr>
+      <tr><td>Value promised at the gate never materialises <small>(MIT 95%)</small></td>
+        <td>ROI is projected, never reconciled</td>
+        <td class="lands"><span class="tag new">Realizer</span> projection vs. realized</td></tr>
+      <tr><td>Poor / unready data <small>(Gartner, RAND)</small></td>
+        <td>Treated as a code problem, not a data problem</td>
+        <td class="lands"><span class="tag exist">TechScope</span> + data-readiness checks, continuous</td></tr>
+      <tr><td>Governance &amp; compliance as a moving target <small>(EU AI Act)</small></td>
+        <td>One-time classification at intake</td>
+        <td class="lands"><span class="tag new">Auditor</span> continuous compliance</td></tr>
+      <tr><td>Right idea, wrong problem / chasing tech <small>(RAND)</small></td>
+        <td>No proactive sensing of real demand</td>
+        <td class="lands"><span class="tag new">Scout</span> + <span class="tag exist">IdeaPulse</span> problem-fit</td></tr>
+    </table>
+  </section>
+
+  <!-- 3. The core insight -->
+  <section id="s3">
+    <h2><span class="num">3</span>The core insight — a gate is a moment, a lifecycle is a continuum</h2>
+    <div class="split">
+      <div class="card gate">
+        <h4>Oliver as a stage-gate (today)</h4>
+        <ul>
+          <li><strong>Reactive</strong> — waits for a submission to arrive</li>
+          <li><strong>Point-in-time</strong> — scores once, then goes quiet</li>
+          <li><strong>Stateless</strong> — the spreadsheet tracker is a manual snapshot</li>
+          <li><strong>Intake-only</strong> — nothing happens <em>between</em> gates or <em>after</em> deployment</li>
+          <li>Answers: <em>"did this idea pass?"</em></li>
+        </ul>
+      </div>
+      <div class="card life">
+        <h4>Oliver as a lifecycle mesh (target)</h4>
+        <ul>
+          <li><strong>Proactive</strong> — senses and harvests candidate ideas</li>
+          <li><strong>Continuous</strong> — re-assesses, nudges, and monitors over time</li>
+          <li><strong>Stateful</strong> — a living registry is the single source of truth</li>
+          <li><strong>End-to-end</strong> — coaches between gates, watches deployed models, tracks value</li>
+          <li>Answers: <em>"is the whole portfolio healthy and delivering?"</em></li>
+        </ul>
+      </div>
+    </div>
+    <p>The good news: most of the existing agents <strong>generalise</strong> from a one-shot role to a continuous
+      one. We don't rebuild Oliver — we extend the pattern and add the missing planes.</p>
+  </section>
+
+  <!-- 4. Target architecture -->
+  <section id="s4">
+    <h2><span class="num">4</span>Target architecture — the Oliver Lifecycle Mesh</h2>
+    <p class="lede">Six planes. Existing agents keep their jobs but operate continuously; new agents fill sensing,
+      operations, memory, and orchestration.</p>
+
+    <div class="mesh">
+
+      <div class="plane">
+        <div class="ph"><b>① Sensing &amp; Intake</b><span>get the right ideas in</span></div>
+        <div class="agents">
+          <div class="agent n"><b>Scout · NEW</b><small>harvests candidate ideas from Teams, email, idea boards</small></div>
+          <div class="agent e"><b>DocGuard</b><small>completeness gate (&gt;30 to enter)</small></div>
+        </div>
+      </div>
+
+      <div class="plane">
+        <div class="ph"><b>② Assessment</b><span>score &amp; stage — the current Oliver core</span></div>
+        <div class="agents">
+          <div class="agent e"><b>IdeaPulse</b><small>idea quality &amp; problem fit</small></div>
+          <div class="agent e"><b>ValuePulse</b><small>strategic → financial value</small></div>
+          <div class="agent e"><b>TechScope</b><small>technical feasibility</small></div>
+          <div class="agent e"><b>PathFinder</b><small>execution readiness</small></div>
+          <div class="agent e"><b>Verdict</b><small>consolidate + consistency</small></div>
+          <div class="agent e"><b>StageMaster</b><small>DI assignment</small></div>
+        </div>
+      </div>
+
+      <div class="plane">
+        <div class="ph"><b>③ Enablement</b><span>help pilots move between gates</span></div>
+        <div class="agents">
+          <div class="agent e"><b>IdeaCoach</b><small>constructive, continuous coaching</small></div>
+          <div class="agent e"><b>Pacer</b><small>cadence, SLA &amp; "days-to-next-gate"</small></div>
+          <div class="agent n"><b>Connector · NEW</b><small>matches pilots to experts, templates, adjacent teams</small></div>
+        </div>
+      </div>
+
+      <div class="plane">
+        <div class="ph"><b>④ Operations &amp; Assurance</b><span>for live pilots — DI3 → DI5</span></div>
+        <div class="agents">
+          <div class="agent n"><b>Sentinel · NEW</b><small>model &amp; performance monitoring: drift, accuracy SLO ≥80%, latency</small></div>
+          <div class="agent n"><b>Realizer · NEW</b><small>value realization — did the ROI / cost savings actually land?</small></div>
+          <div class="agent n"><b>Auditor · NEW</b><small>continuous compliance, EU AI Act, full audit trail</small></div>
+        </div>
+      </div>
+
+      <div class="plane">
+        <div class="ph"><b>⑤ Memory &amp; State</b><span>the backbone — shared blackboard</span></div>
+        <div class="agents">
+          <div class="agent n"><b>Registrar · NEW</b><small>the living pilot registry; replaces the static tracker; single source of truth every agent reads/writes</small></div>
+        </div>
+      </div>
+
+      <div class="plane">
+        <div class="ph"><b>⑥ Orchestration &amp; Engagement</b><span>the control layer</span></div>
+        <div class="agents">
+          <div class="agent n"><b>Conductor · NEW</b><small>top-level router + event bus; turns one-shot into event-driven</small></div>
+          <div class="agent e"><b>Herald</b><small>communication fabric: email, Teams, cards</small></div>
+          <div class="agent e"><b>Human Console</b><small>HITL checkpoints &amp; portfolio view</small></div>
+        </div>
+      </div>
+
+    </div>
+    <p class="legend"><span class="tag exist">EXISTING</span> reuse the agent Oliver already has &nbsp;·&nbsp;
+      <span class="tag new">NEW</span> build to close the lifecycle loop</p>
+  </section>
+
+  <!-- 5. How existing agents generalise -->
+  <section id="s5">
+    <h2><span class="num">5</span>How today's agents generalise to a lifecycle role</h2>
+    <table>
+      <tr><th>Agent (today)</th><th>One-shot role now</th><th>Continuous lifecycle role</th></tr>
+      <tr><td><span class="tag exist">StageMaster</span></td><td>Assigns a DI stage at intake</td>
+        <td>Becomes the <strong>lifecycle state machine</strong> — tracks every pilot's live position, not just at submission</td></tr>
+      <tr><td><span class="tag exist">Verdict</span></td><td>Consolidates one submission's scores</td>
+        <td>Becomes the <strong>portfolio consolidation brain</strong> — spots cross-pilot patterns &amp; contradictions</td></tr>
+      <tr><td><span class="tag exist">Pacer</span></td><td>Suggests a timeline once</td>
+        <td><strong>Continuous SLA &amp; cadence watch</strong> — flags stalls (the tracker already computes days-to-next-gate)</td></tr>
+      <tr><td><span class="tag exist">IdeaCoach</span></td><td>Coaching email at the gate</td>
+        <td><strong>Always-on enablement</strong> — re-coaches as gaps close and new ones appear</td></tr>
+      <tr><td><span class="tag exist">ValuePulse</span></td><td>Projects strategic / financial value</td>
+        <td>Opens the loop that <strong>Realizer closes</strong> — projection vs. realized value</td></tr>
+      <tr><td><span class="tag exist">Herald</span></td><td>Writes the feedback email</td>
+        <td><strong>Engagement fabric</strong> across the lifecycle — nudges, alerts, status, digests</td></tr>
+    </table>
+  </section>
+
+  <!-- 6. New agents -->
+  <section id="s6">
+    <h2><span class="num">6</span>The new agents to build</h2>
+    <table>
+      <tr><th>Agent</th><th>Plane</th><th>Why it's needed (grounded in your materials)</th></tr>
+      <tr><td><span class="tag new">Registrar</span></td><td>Memory</td>
+        <td>The <em>AI_Pilot_Tracker</em> is a manual spreadsheet snapshot. A lifecycle system needs a live single source of truth that all agents share — build this <strong>first</strong>.</td></tr>
+      <tr><td><span class="tag new">Conductor</span></td><td>Orchestration</td>
+        <td>Today's pipeline is linear and one-shot. Gates, metric breaches and drift are <em>events</em>; the Conductor routes them so the mesh runs continuously.</td></tr>
+      <tr><td><span class="tag new">Sentinel</span></td><td>Operations</td>
+        <td>The POC metrics demand Accuracy SLO ≥80% and Bias &lt;10% — but nothing currently <em>watches</em> deployed models for drift against those thresholds.</td></tr>
+      <tr><td><span class="tag new">Realizer</span></td><td>Operations</td>
+        <td>ROI ≥15% and cost savings ≥€100k are <em>promised</em> at the gate; Realizer verifies they actually materialised (closes the value loop).</td></tr>
+      <tr><td><span class="tag new">Auditor</span></td><td>Assurance</td>
+        <td>The framework requires a <em>"full audit trail for all scores and decisions"</em> and EU AI Act classification — make it continuous, not a point check.</td></tr>
+      <tr><td><span class="tag new">Scout</span></td><td>Sensing</td>
+        <td>Oliver is reactive. Scout proactively surfaces candidate ideas so the funnel fills itself rather than waiting for submissions.</td></tr>
+      <tr><td><span class="tag new">Connector</span></td><td>Enablement</td>
+        <td>IdeaCoach already recommends "internal contacts working on adjacent problems" — Connector operationalises that into a real matching network.</td></tr>
+    </table>
+  </section>
+
+  <!-- 7. Lifecycle behaviors -->
+  <section id="s7">
+    <h2><span class="num">7</span>The behaviors the mesh must run — managing the portfolio, not just the gate</h2>
+    <p class="lede">A lifecycle system is defined by what it does <em>between and after</em> gates. These behaviors are the
+      point of the whole exercise — each is an <strong>event-driven policy</strong>, not a manual chore, and each
+      already has a home in the architecture above.</p>
+
+    <h3>Every pilot moves through live states — not a single pass</h3>
+    <div class="states">
+      <span class="st active">Active<small>moving on cadence</small></span>
+      <span class="branch">→</span>
+      <span class="st warn">Stalled<small>no movement → escalate</small></span>
+      <span class="st kill">Fail-fast<small>breach → No-Go</small></span>
+      <span class="st star">Stellar<small>exemplary → replicate</small></span>
+      <span class="st warn">Drifted<small>decay → upgrade</small></span>
+      <span class="branch">→</span>
+      <span class="st end">Decommissioned / Retired</span>
+    </div>
+    <p class="barnote">The <span class="tag new">Registrar</span> holds each pilot's current state; the
+      <span class="tag new">Conductor</span> fires the transition when a trigger event occurs; the
+      <span class="tag exist">Human Console</span> is where a person confirms the irreversible ones (kill, scale, retire).</p>
+
+    <div class="behaviors">
+      <div class="bx">
+        <h4><span class="ic">⛳</span>Escalation for stagnated pilots</h4>
+        <p>A pilot that hasn't advanced a gate within its expected window gets surfaced — owner first, then sponsor —
+          before it quietly dies in “pilot purgatory.”</p>
+        <p class="trig"><b>Trigger:</b> days-in-stage &gt; SLA · <b>Runs on:</b>
+          <span class="tag exist">Pacer</span> detects → <span class="tag new">Conductor</span> escalates →
+          <span class="tag exist">Herald</span> notifies</p>
+      </div>
+      <div class="bx">
+        <h4><span class="ic">📈</span>Trend evaluation across submissions</h4>
+        <p>Mine the whole intake stream for patterns: recurring gaps (e.g. governance always weakest), tech clusters,
+          which problem types keep failing — so the funnel itself gets smarter.</p>
+        <p class="trig"><b>Trigger:</b> scheduled / on-submission · <b>Runs on:</b>
+          <span class="tag exist">Verdict</span> as portfolio brain over the <span class="tag new">Registrar</span></p>
+      </div>
+      <div class="bx">
+        <h4><span class="ic">🔔</span>Reminders to advance pilots</h4>
+        <p>Proactive nudges with a concrete next action and a “days-to-next-gate” countdown — the tracker already
+          computes this; here it becomes an automatic prompt, not a spreadsheet column.</p>
+        <p class="trig"><b>Trigger:</b> approaching gate / idle owner · <b>Runs on:</b>
+          <span class="tag exist">Pacer</span> + <span class="tag exist">Herald</span> digests</p>
+      </div>
+      <div class="bx">
+        <h4><span class="ic">⭐</span>Identification of stellar pilots</h4>
+        <p>Auto-flag exemplary performers (high score + realized value + healthy SLOs) for fast-track, sponsor
+          visibility, and replication to adjacent teams.</p>
+        <p class="trig"><b>Trigger:</b> score + realized-value thresholds · <b>Runs on:</b>
+          <span class="tag exist">Verdict</span> + <span class="tag new">Realizer</span> → <span class="tag new">Connector</span> replicates</p>
+      </div>
+      <div class="bx">
+        <h4><span class="ic">🛑</span>Fail-fast mode</h4>
+        <p>Extend the protocol's existing automatic No-Go (below 70%) into live operation: a pilot that breaches its
+          SLO or stalls past threshold is recommended for a clean, evidence-backed kill — fast, not lingering.</p>
+        <p class="trig"><b>Trigger:</b> SLO breach / score floor / stall · <b>Runs on:</b>
+          <span class="tag new">Sentinel</span> + <span class="tag exist">StageMaster</span> → <span class="tag exist">Human Console</span> confirms</p>
+      </div>
+      <div class="bx">
+        <h4><span class="ic">♻️</span>Decommissioning &amp; upgrading</h4>
+        <p>Retire models that have drifted or been superseded; route others to a versioned upgrade. The pilot's
+          end-state is recorded — nothing just disappears.</p>
+        <p class="trig"><b>Trigger:</b> drift / obsolescence / new version · <b>Runs on:</b>
+          <span class="tag new">Sentinel</span> detects → <span class="tag new">Conductor</span> routes → <span class="tag new">Registrar</span> records</p>
+      </div>
+      <div class="bx" style="grid-column:1 / -1;">
+        <h4><span class="ic">🧬</span>Synthesizing — the self-improving loop</h4>
+        <p>The capstone behavior: learn which <em>early</em> signals actually predicted DI5 success or failure, and feed
+          that back into the scoring weights. The portfolio's own history becomes training data for better gating —
+          closing exactly the “learning gap” the MIT research identifies as the difference between value and pilot purgatory.</p>
+        <p class="trig"><b>Trigger:</b> pilot reaches terminal state (scaled / killed / retired) · <b>Runs on:</b>
+          <span class="tag exist">Verdict</span> + <span class="tag new">Realizer</span> feed back into <span class="tag exist">scoring</span> via the <span class="tag new">Registrar</span></p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Note on sequencing:</strong> these don't all arrive at once. Reminders, escalation and trend-mining
+      ride on agents we already have (Pacer, Verdict, Herald) — they're <em>Horizon 1–2</em>. Fail-fast, decommissioning
+      and synthesis depend on the Operations plane and the event bus — <em>Horizon 2–3</em>. The roadmap below sequences them.
+    </div>
+  </section>
+
+  <!-- 8. Roadmap -->
+  <section id="s8">
+    <h2><span class="num">8</span>Evolution roadmap — three horizons</h2>
+    <p class="lede">Run Oliver through its own DI lens: harden the gate, then close the loop, then full lifecycle.</p>
+
+    <div class="horizon">
+      <div class="when">Horizon 1 · now → ~Q3 2026</div>
+      <h3>Harden the Gate</h3>
+      <p>Get Oliver v3.0 running reliably as <em>the</em> stage-gating agent. Stabilise the 10-agent pipeline,
+        reconcile the scoring model (see risks), and stand up the <strong>Registrar</strong> so the tracker becomes
+        a live registry. Migrate the 20 existing pilots.</p>
+      <div class="pill-row"><span class="pill">Stabilise pipeline</span><span class="pill">Registrar MVP</span>
+        <span class="pill">Reconcile scoring model</span><span class="pill">Migrate 20 pilots</span>
+        <span class="pill">Advance reminders</span><span class="pill">Stall escalation</span></div>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Horizon 2 · ~Q4 2026</div>
+      <h3>Close the Loop</h3>
+      <p>Add the <strong>Operations &amp; Assurance</strong> plane for the DI3–DI5 pilots already in flight
+        (Sentinel, Realizer, Auditor) and the <strong>Conductor + event bus</strong> so the system becomes
+        event-driven. Verdict starts producing portfolio-level intelligence.</p>
+      <div class="pill-row"><span class="pill">Sentinel</span><span class="pill">Realizer</span>
+        <span class="pill">Auditor</span><span class="pill">Conductor + events</span><span class="pill">Portfolio view</span>
+        <span class="pill">Trend-mining</span><span class="pill">Fail-fast mode</span><span class="pill">Stellar-pilot flagging</span></div>
+    </div>
+
+    <div class="horizon">
+      <div class="when">Horizon 3 · 2027</div>
+      <h3>Full Lifecycle Mesh</h3>
+      <p>Proactive <strong>Scout</strong> intake, a <strong>Connector</strong> enablement network, and a
+        self-improving loop — agents learn which early signals predicted DI5 success and feed that back into
+        scoring. Governance-grade, end-to-end AI lifecycle management for TI.</p>
+      <div class="pill-row"><span class="pill">Scout</span><span class="pill">Connector network</span>
+        <span class="pill">Self-improving scoring</span><span class="pill">Synthesis loop</span>
+        <span class="pill">Decommission / upgrade</span><span class="pill">Org-wide rollout</span></div>
+    </div>
+  </section>
+
+  <!-- 9. Principles -->
+  <section id="s9">
+    <h2><span class="num">9</span>Design principles to hold onto</h2>
+    <div class="two">
+      <ul>
+        <li><strong>Single source of truth.</strong> One registry; agents collaborate through shared state, not copies.</li>
+        <li><strong>Event-driven, not batch.</strong> A gate decision, an SLO breach, a drift alert — all are events.</li>
+        <li><strong>Stage-adaptive everything.</strong> Weights already shift by DI stage; generalise that across the mesh.</li>
+      </ul>
+      <ul>
+        <li><strong>Human-in-the-loop at decisions.</strong> Keep Oliver's existing review step; automate the prep, not the judgement.</li>
+        <li><strong>Auditable by construction.</strong> Every score &amp; decision logged — the framework already requires it.</li>
+        <li><strong>Enable, don't gatekeep.</strong> Carry the v3.0 coaching ethos across the whole lifecycle.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 10. Risks / open questions -->
+  <section id="s10">
+    <h2><span class="num">10</span>Open questions &amp; risks to resolve early</h2>
+    <table class="risk">
+      <tr><th>Topic</th><th>The issue</th></tr>
+      <tr><td>Scoring model mismatch</td>
+        <td>Protocol v3.0 uses a <strong>0–100 scale + 5 dimensions</strong> (Idea Completeness, Idea Quality, Strategic/Business, Technical, Execution). The tracker &amp; the MeetForge example use <strong>0–200 + 4 dimensions</strong> (Documentation, Business Impact, Technical Readiness, Execution). Pick one canonical model <em>before</em> building the Registrar — everything downstream depends on it.</td></tr>
+      <tr><td>State store</td>
+        <td>Where does the live registry live — Dataverse, a SharePoint list, a database? Decides integration effort and who owns it.</td></tr>
+      <tr><td>Monitoring data access</td>
+        <td>Sentinel &amp; Realizer need telemetry from deployed models <em>and</em> business systems (SAP PM/EWM/S4HANA appear across the tracker). Access &amp; integration is the hard part.</td></tr>
+      <tr><td>Human-in-the-loop load</td>
+        <td>More automation = more decisions surfaced. Design the console so reviewers get a prioritised queue, not a flood.</td></tr>
+      <tr><td>Trust &amp; adoption</td>
+        <td>Submitters must trust agent scores. Keep evidence mandatory; make reasoning transparent.</td></tr>
+      <tr><td>Governing the governor</td>
+        <td>Oliver is an AI that gates AI pilots — it needs <em>its own</em> governance &amp; bias review. Don't exempt the assessor.</td></tr>
+    </table>
+  </section>
+
+  <!-- 11. Next steps -->
+  <section id="s11">
+    <h2><span class="num">11</span>Suggested next steps</h2>
+    <ol>
+      <li><strong>Agree the canonical scoring/data model</strong> (reconcile v2.0 ↔ v3.0) — the prerequisite for everything.</li>
+      <li><strong>Stand up the Registrar</strong> as the live single source of truth and migrate the 20 existing pilots out of the spreadsheet.</li>
+      <li><strong>Pilot the Operations plane on 1–2 live DI3 pilots</strong> — e.g. <em>Document Processing Automation</em> and <em>Logistics Route Optimizer</em> (your exemplary-rated ones) — to prove the value loop closes.</li>
+      <li><strong>Define the event model + a Conductor MVP</strong> so the mesh can react rather than re-run.</li>
+      <li><strong>Draft Oliver's own governance charter</strong> (AI governing AI).</li>
+    </ol>
+    <div class="callout violet">
+      <strong>This is a living document.</strong> As we refine the architecture, naming, and roadmap, we keep
+      updating <em>01-Oliver-Planning.html</em>. Next iterations could add: a concrete data schema for the Registrar,
+      an event taxonomy for the Conductor, and a one-page exec summary for sponsor sign-off.
+    </div>
+  </section>
+
+  <!-- 12. Appendix — agent system prompts -->
+  <section id="s12">
+    <h2><span class="num">12</span>Appendix — agent system prompts <span style="font-weight:400;font-size:14px;color:var(--muted);">(click to expand)</span></h2>
+    <p class="lede">Draft starting points — one per agent, grouped by plane. These are scaffolds to argue with, not final prompts;
+      they encode the protocol's non-negotiables (evidence-mandatory scoring, the 0–100 scale, stage-adaptive weights,
+      human-in-the-loop, an audit trail). Click any agent to reveal its prompt.</p>
+
+    <!-- Plane 1 -->
+    <div class="grp">
+      <div class="gh"><span class="pn">①</span>Sensing &amp; Intake</div>
+      <div class="gs">Get the right ideas in.</div>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Scout</b><small>harvests candidate ideas</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  You are Scout, a sensing agent for Siemens Energy TI's AI-pilot funnel.
+<span class="h">GOAL</span>  Surface candidate AI use-cases before anyone fills in a submission form.
+<span class="h">INPUT</span> Teams channels, email threads, idea boards and project notes you are granted access to.
+<span class="h">DO</span>    Detect a real signal = a pain point + an available data source + a willing owner. Draft a
+      one-line opportunity with a confidence score (0–100). Deduplicate against the Registrar.
+<span class="h">OUT</span>   Candidate record {title, problem, sponsor?, signal_strength, evidence_links} → Registrar as "Sensed".
+<span class="h">GUARD</span> Never invent a sponsor or a metric. You flag, you do not decide. Respect channel privacy scopes.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>DocGuard</b><small>completeness gate (&gt;30 to enter)</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  You are DocGuard, the intake completeness gate.
+<span class="h">GOAL</span>  Decide whether a submission is complete enough to be assessed at all.
+<span class="h">INPUT</span> The raw submission (idea, value claim, tech approach, owner).
+<span class="h">DO</span>    Score completeness 0–100 across required fields. Below 30 → do not pass on; return the exact
+      list of what is missing so the submitter can fix it.
+<span class="h">OUT</span>   {completeness_score, missing_fields[], pass}.
+<span class="h">GUARD</span> Completeness is not quality. You judge only whether enough is present to evaluate — never the merit.</pre></details>
+    </div>
+
+    <!-- Plane 2 -->
+    <div class="grp">
+      <div class="gh"><span class="pn">②</span>Assessment</div>
+      <div class="gs">Score &amp; stage — the current Oliver core.</div>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>IdeaPulse</b><small>idea quality &amp; problem fit</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  IdeaPulse — assess idea quality and problem fit on the unified 0–100 scale.
+<span class="h">DO</span>    Is the problem real, specific and worth solving? Is the approach a fit? Every point of score
+      must cite evidence drawn from the submission.
+<span class="h">OUT</span>   {idea_quality_score, problem_fit, strengths[], gaps[], evidence[]}.
+<span class="h">GUARD</span> Evidence mandatory — no evidence, no score. Enable, don't gatekeep: frame gaps as fixable.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>ValuePulse</b><small>strategic → financial value</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  ValuePulse — translate the idea into strategic and financial value.
+<span class="h">DO</span>    Check against thresholds: ROI ≥15%, cost savings ≥€100k/yr, efficiency gain ≥20%, ≥30 viable
+      users. Weight rises at DI3–DI5.
+<span class="h">OUT</span>   {value_score, roi_claim, savings_claim, adoption_estimate, evidence[]}.
+<span class="h">GUARD</span> Distinguish projected from proven. Record every claim so Realizer can verify it later.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>TechScope</b><small>technical feasibility &amp; data readiness</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  TechScope — technical feasibility and data readiness.
+<span class="h">DO</span>    Is it buildable? Assess data availability/quality, model approach, integration surface
+      (Teams / Jira / SAP PM / EWM / S4HANA) and infrastructure.
+<span class="h">OUT</span>   {tech_score, data_readiness, key_risks[], evidence[]}.
+<span class="h">GUARD</span> Poor data is the #1 cause of AI failure — score data readiness explicitly, never assume it.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>PathFinder</b><small>execution readiness</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  PathFinder — execution readiness.
+<span class="h">DO</span>    Assess sponsor, core team, budget, plan and governance. Stage-adaptive: weight rises at DI3–DI5.
+<span class="h">OUT</span>   {execution_score, sponsor?, team?, budget_status, gaps[]}.
+<span class="h">GUARD</span> Express what's missing as actions with owners — don't just deduct points.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>Verdict</b><small>consolidate + portfolio brain</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Verdict — consolidation and consistency.
+<span class="h">DO</span>    Merge dimension scores into one 0–100 result using stage-adaptive weights; flag contradictions
+      across agents. In lifecycle mode, also mine cross-pilot patterns and flag stellar / stalling pilots.
+<span class="h">OUT</span>   {overall_score, consistency_flags[], portfolio_signals[]}.
+<span class="h">GUARD</span> ≥70% is the pass bar; below recommends a No-Go — never an automatic kill. A human confirms.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>StageMaster</b><small>DI assignment → state machine</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  StageMaster — the lifecycle state machine.
+<span class="h">DO</span>    Assign DI1–DI5 from the consolidated score and evidence. In lifecycle mode, hold each pilot's
+      live state (Active / Stalled / Fail-fast / Stellar / Drifted / Retired) and emit a transition event.
+<span class="h">OUT</span>   {di_stage, state, transition_event?}.
+<span class="h">GUARD</span> A stage is a claim about evidence, not ambition. Every transition is logged.</pre></details>
+    </div>
+
+    <!-- Plane 3 -->
+    <div class="grp">
+      <div class="gh"><span class="pn">③</span>Enablement</div>
+      <div class="gs">Help pilots move between gates.</div>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>IdeaCoach</b><small>continuous coaching</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  IdeaCoach — constructive, continuous enablement.
+<span class="h">DO</span>    Turn gaps into a short, warm, specific coaching note. Re-coach as gaps close and new ones appear.
+      Suggest concrete next actions and (via Connector) relevant experts and templates.
+<span class="h">OUT</span>   A coaching message — encouraging, specific, evidence-linked.
+<span class="h">GUARD</span> Enable, don't gatekeep. Never shame. No generic advice — tie every tip to this submission.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>Pacer</b><small>cadence &amp; SLA</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Pacer — cadence and SLA watch.
+<span class="h">DO</span>    Compute days-in-stage and days-to-next-gate; flag stalls past SLA. Gate decision target: &lt;24h.
+<span class="h">OUT</span>   {days_in_stage, days_to_next_gate, stall_flag, reminder?}.
+<span class="h">GUARD</span> A reminder must carry a concrete next action — not just a nag.</pre></details>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Connector</b><small>expert / template matching</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Connector — the enablement matching network.
+<span class="h">DO</span>    Match a pilot to internal experts, adjacent teams, reusable templates and prior pilots that
+      solved a similar problem.
+<span class="h">OUT</span>   {matches[{person/team, why, contact}], templates[]}.
+<span class="h">GUARD</span> Resolve people via the directory — never invent a contact. You suggest; the human reaches out.</pre></details>
+    </div>
+
+    <!-- Plane 4 -->
+    <div class="grp">
+      <div class="gh"><span class="pn">④</span>Operations &amp; Assurance</div>
+      <div class="gs">For live pilots, DI3 → DI5.</div>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Sentinel</b><small>drift &amp; SLO monitoring</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Sentinel — model &amp; performance monitoring for live pilots.
+<span class="h">DO</span>    Watch deployed models for drift and threshold breaches: accuracy SLO ≥80%, bias &lt;10%, latency.
+      Emit an alert event the moment a threshold is crossed.
+<span class="h">OUT</span>   {metric, value, threshold, status, breach_event?}.
+<span class="h">GUARD</span> Act only on real telemetry. No feed → report "unmonitored", never assume healthy.</pre></details>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Realizer</b><small>value realization</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Realizer — value realization; closes the loop ValuePulse opened.
+<span class="h">DO</span>    Compare projected ROI / savings against actuals pulled from business systems.
+<span class="h">OUT</span>   {projected, realized, variance, on_track}.
+<span class="h">GUARD</span> Use sourced figures only. Flag any pilot that promised value but hasn't delivered it.</pre></details>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Auditor</b><small>continuous compliance, EU AI Act</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Auditor — continuous compliance &amp; assurance.
+<span class="h">DO</span>    Maintain EU AI Act classification, consent / retention / DPIA status, and a full audit trail of
+      every score and decision. Re-check as the pilot evolves.
+<span class="h">OUT</span>   {ai_act_class, compliance_flags (target 0), audit_trail_ref}.
+<span class="h">GUARD</span> Compliance is continuous, not a one-time check. Govern the governor — Oliver's own calls are audited too.</pre></details>
+    </div>
+
+    <!-- Plane 5 -->
+    <div class="grp">
+      <div class="gh"><span class="pn">⑤</span>Memory &amp; State</div>
+      <div class="gs">The backbone — shared blackboard.</div>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Registrar</b><small>the living pilot registry</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Registrar — the living single source of truth.
+<span class="h">DO</span>    Store every pilot's record, state, scores, evidence and history. Every agent reads and writes
+      through you. Replace the static tracker spreadsheet.
+<span class="h">OUT</span>   Canonical pilot records + an append-only change log.
+<span class="h">GUARD</span> One canonical data model only (resolve the v2 ↔ v3 scoring mismatch first). No silent overwrites
+      — history is appended, never replaced.</pre></details>
+    </div>
+
+    <!-- Plane 6 -->
+    <div class="grp">
+      <div class="gh"><span class="pn">⑥</span>Orchestration &amp; Engagement</div>
+      <div class="gs">The control layer.</div>
+      <details class="ag"><summary><span class="tag new">NEW</span><b>Conductor</b><small>router + event bus</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Conductor — top-level router and event bus.
+<span class="h">DO</span>    Turn gate decisions, SLO breaches, drift alerts and stalls into events, and route each to the
+      right agent(s). Make the mesh event-driven instead of one-shot.
+<span class="h">OUT</span>   Routed actions + an orchestration log.
+<span class="h">GUARD</span> Irreversible actions (kill, scale, retire) always route through the Human Console first.</pre></details>
+      <details class="ag"><summary><span class="tag exist">EXISTING</span><b>Herald</b><small>communication fabric</small><span class="tw">+</span></summary>
+<pre class="prompt"><span class="h">ROLE</span>  Herald — the engagement fabric.
+<span class="h">DO</span>    Deliver every outbound message — feedback emails, nudges, alerts, digests, status cards —
+      across email and Teams, in the right tone for the audience.
+<span class="h">OUT</span>   A formatted message + a delivery record.
+<span class="h">GUARD</span> Faithful to agent content; never invent results. Human-in-the-loop content stays marked "draft"
+      until a person approves it.</pre></details>
+    </div>
+
+    <div class="callout violet">
+      <strong>Human Console</strong> is intentionally <em>not</em> an agent — it's the human-in-the-loop surface where a
+      person sees a prioritised queue and confirms the irreversible calls (No-Go, scale, retire). Automate the prep,
+      never the judgement.
+    </div>
+  </section>
+
+  <footer class="src">
+    <p><span class="kicker">Sources reviewed</span><br>
+      AI Pilot Stage Gate Evaluation Protocol v3.0 (Oliver, 10-agent system) · PUMA Stage-Gate Assessment —
+      MeetForge example (2026-02-04) · AI POC Metrics framework (KPIs, gate thresholds, audit requirements) ·
+      AI Pilot Tracker v1 (20 pilots; Registry, Opportunities, Next Steps, Score History, Dashboard).
+      The Oliver SharePoint page itself was not directly accessible; the v3.0 protocol PDF is its underlying source content.</p>
+    <p><span class="kicker">Research synthesised (Section 2)</span><br>
+      MIT NANDA, “The GenAI Divide: State of AI in Business” (2025) — 95% of GenAI pilots show no P&amp;L impact; the
+      “learning gap.” · RAND Corporation, “The Root Causes of Failure for AI Projects” (2024) — &gt;80% failure,
+      ~2× the non-AI IT rate; five root causes. · Gartner — $12.9M average annual cost of poor data quality. ·
+      McKinsey — 16–30% productivity gains when AI is treated as a coached collaborator. · MLOps / AI-lifecycle
+      (ADLC vs SDLC) practice literature (2026). Figures are directional, drawn from the cited studies.</p>
+  </footer>
+
+</div>
+</body>
+</html>

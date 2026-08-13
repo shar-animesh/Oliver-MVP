@@ -1,0 +1,13 @@
+location                            = "westeurope"
+environment                         = "dev"
+resource_prefix                     = "oliver"
+mailbox_address                     = "oliver@example.com"
+model_base_url                      = "https://your-resource-name.openai.azure.com/openai/v1/"
+model_name                          = "replace-with-your-azure-openai-deployment-name"
+reasoning_effort                    = "high"
+oliver_image_tag                    = "latest"
+admin_backend_image_tag             = "latest"
+admin_frontend_image_tag            = "latest"
+
+# Supply the sensitive model key through the environment instead:
+# export TF_VAR_model_api_key='...'

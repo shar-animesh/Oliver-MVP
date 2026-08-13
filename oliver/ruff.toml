@@ -1,0 +1,16 @@
+# Long lines are allowed.
+line-length = 150
+target-version = "py312"
+
+[lint]
+# Default selection plus isort and bugbear.
+select = ["E", "F", "W", "I", "B"]
+
+[lint.flake8-bugbear]
+# FastAPI parameter markers are immutable call defaults used in request dependencies;
+# `Depends` keeps its explicit `# noqa: B008`.
+extend-immutable-calls = ["fastapi.Query", "fastapi.Body", "fastapi.Path", "fastapi.Cookie", "fastapi.Form", "fastapi.File", "fastapi.Header"]
+
+[lint.isort]
+# Oliver uses top-level modules because the project intentionally has no `app` package.
+known-first-party = ["config", "logger", "routes", "utils"]
