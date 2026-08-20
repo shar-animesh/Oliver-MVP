@@ -4,8 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -18,7 +17,7 @@ class EmailThreadDb(DatabaseBase):
 
     __tablename__ = "email_threads"
 
-    id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, primary_key=True)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
     conversation_id: Mapped[str] = mapped_column(String(512), nullable=False)
     subject: Mapped[Optional[str]] = mapped_column(String(998), nullable=True)
     participant_email: Mapped[Optional[str]] = mapped_column(String(320), nullable=True)
@@ -45,8 +44,8 @@ class EmailMessageDb(DatabaseBase):
 
     __tablename__ = "email_messages"
 
-    id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, primary_key=True)
-    thread_id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, ForeignKey("email_threads.id"), nullable=False)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    thread_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("email_threads.id"), nullable=False)
     internet_message_id: Mapped[str] = mapped_column(String(512), nullable=False)
     direction: Mapped[str] = mapped_column(String(16), nullable=False)
     sender_email: Mapped[Optional[str]] = mapped_column(String(320), nullable=True)
@@ -64,9 +63,9 @@ class OliverRunDb(DatabaseBase):
 
     __tablename__ = "oliver_runs"
 
-    id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, primary_key=True)
-    thread_id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, ForeignKey("email_threads.id"), nullable=False)
-    inbound_message_id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, ForeignKey("email_messages.id"), nullable=False)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    thread_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("email_threads.id"), nullable=False)
+    inbound_message_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("email_messages.id"), nullable=False)
     action: Mapped[str] = mapped_column(String(32), nullable=False)
     model_name: Mapped[str] = mapped_column(String(255), nullable=False)
     subject: Mapped[Optional[str]] = mapped_column(String(998), nullable=True)
@@ -88,9 +87,9 @@ class OliverRunRelatedThreadDb(DatabaseBase):
 
     __tablename__ = "oliver_run_related_threads"
 
-    id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, primary_key=True)
-    run_id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, ForeignKey("oliver_runs.id"), nullable=False)
-    related_thread_id: Mapped[UUID] = mapped_column(UNIQUEIDENTIFIER, ForeignKey("email_threads.id"), nullable=False)
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    run_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("oliver_runs.id"), nullable=False)
+    related_thread_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("email_threads.id"), nullable=False)
     rank: Mapped[int] = mapped_column(Integer, nullable=False)
     cosine_distance: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

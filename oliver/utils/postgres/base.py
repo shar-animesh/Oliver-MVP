@@ -1,5 +1,5 @@
 # Path: utils/postgres/base.py
-# Description: Database client for Azure SQL.
+# Description: Database client for Azure Database for PostgreSQL.
 
 from typing import Generator
 

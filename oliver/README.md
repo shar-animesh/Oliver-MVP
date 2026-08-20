@@ -1,12 +1,12 @@
 # Oliver
 
-Oliver is one tool-using agent governed by one system prompt. The FastAPI email endpoint stores complete conversations, retrieves related internal initiatives from Azure SQL, and returns either a branded email response or a no-reply instruction.
+Oliver is one tool-using agent governed by one system prompt. The FastAPI email endpoint stores complete conversations, retrieves related internal initiatives from PostgreSQL, and returns either a branded email response or a no-reply instruction.
 
 ## Runtime flow
 
 1. `POST /api/v1/email/respond` persists the inbound message and reconstructs its complete thread.
-2. Oliver creates a `text-embedding-3-large` vector for the readable transcript and stores it in Azure SQL as `VECTOR(1536)`.
-3. Azure SQL cosine search retrieves a bounded set of similar conversations belonging to other internal participants.
+2. Oliver creates a `text-embedding-3-large` vector for the readable transcript and stores it with pgvector as `vector(1536)`.
+3. PostgreSQL cosine search retrieves a bounded set of similar conversations belonging to other internal participants.
 4. Oliver receives the current thread plus complete related transcripts and may recommend a relevant internal contact.
 5. The model returns parsed `OliverResponse` JSON. The endpoint wraps `SEND_EMAIL` content in the branded shell, records the run and semantic matches, and returns it to the Logic App. `NO_REPLY` records the decision without sending mail.
 

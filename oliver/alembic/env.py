@@ -1,4 +1,4 @@
-"""Alembic environment for the Oliver-owned Azure SQL schema."""
+"""Alembic environment for the Oliver-owned PostgreSQL schema."""
 
 from logging.config import fileConfig
 

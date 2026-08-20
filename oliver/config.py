@@ -1,5 +1,5 @@
 # Path: config.py
-# Description: Central validated configuration for the Oliver API, OpenAI models, and Azure SQL.
+# Description: Central validated configuration for the Oliver API, OpenAI models, and PostgreSQL.
 
 from functools import lru_cache
 from typing import Optional

@@ -2,10 +2,9 @@
 
 import json
 from typing import Any, Dict, List, Tuple
-from uuid import UUID
 
 from openai import OpenAI
-from sqlalchemy import select, text
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from utils.postgres import EmailThreadDb
@@ -47,46 +46,29 @@ def handle_tool_call(
 
     arguments = SearchRelatedIdeasInput.model_validate_json(tool_arguments)
     query_embedding = generate_embedding(client, arguments.query)
+    distance = EmailThreadDb.embedding.cosine_distance(query_embedding)
     rows = db.execute(
-        text(
-            f"""
-            SELECT TOP ({SIMILAR_IDEA_LIMIT})
-                id,
-                VECTOR_DISTANCE('cosine', embedding, CAST(:query_embedding AS VECTOR(1536))) AS cosine_distance
-            FROM email_threads
-            WHERE id <> :thread_id
-                AND embedding IS NOT NULL
-                AND participant_email IS NOT NULL
-                AND LOWER(participant_email) LIKE :internal_domain
-                AND (:participant_email IS NULL OR participant_email <> :participant_email)
-                AND embedding_model = :embedding_model
-                AND embedding_dimensions = :embedding_dimensions
-                AND VECTOR_DISTANCE('cosine', embedding, CAST(:query_embedding AS VECTOR(1536))) <= :maximum_distance
-            ORDER BY cosine_distance ASC
-            """
-        ),
-        {
-            "query_embedding": json.dumps(query_embedding, separators=(",", ":")),
-            "thread_id": str(current_thread.id),
-            "participant_email": current_thread.participant_email,
-            "internal_domain": f"%@{INTERNAL_EMAIL_DOMAIN}",
-            "embedding_model": OPENAI_EMBEDDING_MODEL,
-            "embedding_dimensions": OPENAI_EMBEDDING_DIMENSIONS,
-            "maximum_distance": SIMILAR_IDEA_MAX_COSINE_DISTANCE,
-        },
+        select(EmailThreadDb, distance.label("cosine_distance"))
+        .where(
+            EmailThreadDb.id != current_thread.id,
+            EmailThreadDb.embedding.is_not(None),
+            EmailThreadDb.participant_email.is_not(None),
+            func.lower(EmailThreadDb.participant_email).like(f"%@{INTERNAL_EMAIL_DOMAIN}"),
+            EmailThreadDb.participant_email != current_thread.participant_email,
+            EmailThreadDb.embedding_model == OPENAI_EMBEDDING_MODEL,
+            EmailThreadDb.embedding_dimensions == OPENAI_EMBEDDING_DIMENSIONS,
+            distance <= SIMILAR_IDEA_MAX_COSINE_DISTANCE,
+        )
+        .order_by(distance)
+        .limit(SIMILAR_IDEA_LIMIT)
     ).all()
     if not rows:
         return json.dumps({"results": []}), []
 
-    thread_ids = [UUID(str(row.id)) for row in rows]
-    threads = {candidate.id: candidate for candidate in db.scalars(select(EmailThreadDb).where(EmailThreadDb.id.in_(thread_ids)))}
     matches: List[Tuple[EmailThreadDb, float]] = []
     results: List[Dict[str, Any]] = []
-    for row in rows:
-        related_thread = threads.get(UUID(str(row.id)))
-        if related_thread is None:
-            continue
-        cosine_distance = float(row.cosine_distance)
+    for related_thread, raw_cosine_distance in rows:
+        cosine_distance = float(raw_cosine_distance)
         matches.append((related_thread, cosine_distance))
         results.append(
             {
